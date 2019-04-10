@@ -3,7 +3,7 @@
 // VGA verilog template
 // Author:  Da Cheng
 //////////////////////////////////////////////////////////////////////////////////
-module vga_demo(ClkPort, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b, Sw0, Sw1, btnU, btnD,
+module object_test(ClkPort, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b, Sw0, Sw1, btnU, btnD,
 	St_ce_bar, St_rp_bar, Mt_ce_bar, Mt_St_oe_bar, Mt_St_we_bar,
 	An0, An1, An2, An3, Ca, Cb, Cc, Cd, Ce, Cf, Cg, Dp,
 	LD0, LD1, LD2, LD3, LD4, LD5, LD6, LD7);
@@ -48,7 +48,7 @@ module vga_demo(ClkPort, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b, Sw0, Sw1, 
 
 	hvsync_generator syncgen(.clk(clk), .reset(reset),.vga_h_sync(vga_h_sync), .vga_v_sync(vga_v_sync), .inDisplayArea(inDisplayArea), .CounterX(CounterX), .CounterY(CounterY));
 	
-	object(
+	object obj1(
 		.reset(reset),
 		.ObjectX(obj1X),
 		.ObjectY(obj1Y),
@@ -86,9 +86,9 @@ module vga_demo(ClkPort, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b, Sw0, Sw1, 
 			obj1W <= 10'd300;
 			obj1H <= 9'd100;
 		end
-		vga_r <= obj1Hit & inDisplayArea;
-		vga_g <= obj1Hit & inDisplayArea;
-		vga_b <= obj1Hit & inDisplayArea;
+		vga_r <= (obj1Hit | R) & inDisplayArea;
+		vga_g <= (obj1Hit | G) & inDisplayArea;
+		vga_b <= (obj1Hit | B) & inDisplayArea;
 	end
 	
 	/////////////////////////////////////////////////////////////////
