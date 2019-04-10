@@ -6,7 +6,8 @@
 module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, Sw0, Sw1, btnU, btnD,
 	St_ce_bar, St_rp_bar, Mt_ce_bar, Mt_St_oe_bar, Mt_St_we_bar,
 	An0, An1, An2, An3, Ca, Cb, Cc, Cd, Ce, Cf, Cg, Dp,
-	LD0, LD1, LD2, LD3, LD4, LD5, LD6, LD7);
+	LD0, LD1, LD2, LD3, LD4, LD5, LD6, LD7,
+	JA, JB);
 	input ClkPort, Sw0, btnU, btnD, Sw0, Sw1;
 	input [7:0] JA, JB;
 	output St_ce_bar, St_rp_bar, Mt_ce_bar, Mt_St_oe_bar, Mt_St_we_bar;
@@ -43,6 +44,9 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, Sw0,
 	
 	reg [8:0] scaledPot1;
 	reg [8:0] scaledPot2;
+	
+	reg [8:0] player1Pos;
+	reg [8:0] player2Pos;
 	//-----------
 	
 	
@@ -109,7 +113,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, Sw0,
 	);
 	
 	read_potentiometer pot1(
-		.clk(clk),
+		.sys_clk(clk),
 		.reset(reset),
 		.JPorts(JA[7:0]),
 		.Value(potentiometer1)
@@ -118,21 +122,20 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, Sw0,
 	/////////////////////////////////////////////////////////////////
 	///////////////		VGA control starts here		/////////////////
 	/////////////////////////////////////////////////////////////////
-	reg [9:0] position;
 	
 	//Update the position of the paddle based off of potentiometer
 	always @(posedge DIV_CLK[20])
 		begin
 		scaledPot1 = ({potentiometer1[6:0], 2'b00});
 		if(scaledPot1 < 41)
-			obj3Y <= 0;
+			player1Pos <= 0;
 		else
 			begin
 			scaledPot1 = scaledPot1 - 9'd41;
 			if(scaledPot1 > 430)
-				obj3Y <= 430;
+				player1Pos <= 430;
 			else
-				obj3Y <= scaledPot1;
+				player1Pos <= scaledPot1;
 			end
 		end
 	
@@ -191,6 +194,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, Sw0,
 			vgaGreen <= 3'b000;
 			vgaBlue <= 3'b000;
 			end
+		obj3Y <= player1Pos;
 	end
 	
 	/////////////////////////////////////////////////////////////////
