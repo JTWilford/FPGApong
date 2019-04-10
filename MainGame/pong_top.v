@@ -17,24 +17,24 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, Sw0,
 	reg [2:0] vgaRed, vgaGreen, vgaBlue;
 	//-----------
 	// Signals for Objects
-	reg [9:0] obj1X;
-	reg [8:0] obj1Y;
+	reg [10:0] obj1X;
+	reg [9:0] obj1Y;
 	reg [9:0] obj1W;
-	reg [9:0] obj1H;
+	reg [8:0] obj1H;
 	wire obj1Hit;
 	reg [7:0] obj1Color;		//highest 3 bits for Red, next 3 bits for Green, last 2 bits for Blue
 	
-	reg [9:0] obj2X;
-	reg [8:0] obj2Y;
+	reg [10:0] obj2X;
+	reg [9:0] obj2Y;
 	reg [9:0] obj2W;
-	reg [9:0] obj2H;
+	reg [8:0] obj2H;
 	wire obj2Hit;
 	reg [7:0] obj2Color;
 	
-	reg [9:0] obj3X;
-	reg [8:0] obj3Y;
+	reg [10:0] obj3X;
+	reg [9:0] obj3Y;
 	reg [9:0] obj3W;
-	reg [9:0] obj3H;
+	reg [8:0] obj3H;
 	wire obj3Hit;
 	reg [7:0] obj3Color;
 	//-----------
@@ -45,8 +45,8 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, Sw0,
 	reg [8:0] scaledPot1;
 	reg [8:0] scaledPot2;
 	
-	reg [8:0] player1Pos;
-	reg [8:0] player2Pos;
+	reg [9:0] player1Pos;
+	reg [9:0] player2Pos;
 	//-----------
 	
 	
@@ -126,7 +126,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, Sw0,
 	//Update the position of the paddle based off of potentiometer
 	always @(posedge DIV_CLK[20])
 		begin
-		scaledPot1 = ({potentiometer1[6:0], 2'b00});
+		scaledPot1 = {1'b0, potentiometer1[7:0], 1'b0};
 		if(scaledPot1 < 41)
 			player1Pos <= 0;
 		else
@@ -143,23 +143,23 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, Sw0,
 	begin
 		if(reset)
 			begin
-			obj1X <= 10'd100;
-			obj1Y <= 9'd100;
+			obj1X <= 11'd100;
+			obj1Y <= 10'd100;
 			obj1W <= 10'd300;
 			obj1H <= 9'd100;
 			obj1Color <= 8'b11100000;		//Make Object 1 all red
 			
-			obj2X <= 10'd500;
-			obj2Y <= 9'd50;
+			obj2X <= 11'd500;
+			obj2Y <= 10'd50;
 			obj2W <= 10'd100;
 			obj2H <= 9'd400;
-			obj2Color <= 8'b000010110;		//Make Object 2 greenish-blue
+			obj2Color <= 8'b000001110;		//Make Object 2 greenish-blue
 			
-			obj3X <= 10'd0;
-			obj3Y <= 9'd0;
+			obj3X <= 11'd20;
+			obj3Y <= 10'd0;
 			obj3W <= 10'd10;
 			obj3H <= 9'd50;
-			obj3Color <= 8'b111111110;		//Make Object 3 white
+			obj3Color <= 8'b11111111;		//Make Object 3 white
 			end
 		if(inDisplayArea)
 			begin
@@ -184,7 +184,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, Sw0,
 			else
 				begin
 				vgaRed <= 3'b000;
-				vgaGreen <= 3'b000;
+				vgaGreen <= 3'b111;
 				vgaBlue <= 3'b000;
 				end
 			end
@@ -236,10 +236,10 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, Sw0,
 	wire 	[3:0]	SSD0, SSD1, SSD2, SSD3;
 	wire 	[1:0] ssdscan_clk;
 	
-	assign SSD3 = potentiometer1[7:4];
-	assign SSD2 = potentiometer1[3:0];
-	assign SSD1 = potentiometer2[7:4];
-	assign SSD0 = potentiometer2[3:0];
+	assign SSD3 = 4'b1111;
+	assign SSD2 = {3'b000, player1Pos[8]};
+	assign SSD1 = player1Pos[7:4];
+	assign SSD0 = player1Pos[3:0];
 	
 	// need a scan clk for the seven segment display 
 	// 191Hz (50MHz / 2^18) works well

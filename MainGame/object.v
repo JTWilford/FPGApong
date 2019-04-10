@@ -16,8 +16,8 @@ module object (
 	input clk,
 	input reset,
 	//input sys_clk,
-	input [9:0] ObjectX,		//Object's origin X Coordinate
-	input [8:0] ObjectY,		//Object's origin Y Coordinate
+	input [10:0] ObjectX,		//Object's origin X Coordinate
+	input [9:0] ObjectY,		//Object's origin Y Coordinate
 	input [9:0] ObjectW,		//Object's Width in Pixels
 	input [8:0] ObjectH,		//Object's Height in Pixels
 	
