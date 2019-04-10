@@ -20,6 +20,12 @@ module object_test(ClkPort, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b, Sw0, Sw
 	reg [9:0] obj1H;
 	wire obj1Hit;
 	
+	reg [9:0] obj2X;
+	reg [8:0] obj2Y;
+	reg [9:0] obj2W;
+	reg [9:0] obj2H;
+	wire obj2Hit;
+	
 	//////////////////////////////////////////////////////////////////////////////////////////
 	
 	/*  LOCAL SIGNALS */
@@ -49,13 +55,26 @@ module object_test(ClkPort, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b, Sw0, Sw
 	hvsync_generator syncgen(.clk(clk), .reset(reset),.vga_h_sync(vga_h_sync), .vga_v_sync(vga_v_sync), .inDisplayArea(inDisplayArea), .CounterX(CounterX), .CounterY(CounterY));
 	
 	object obj1(
+		.clk(clk),
 		.reset(reset),
 		.ObjectX(obj1X),
 		.ObjectY(obj1Y),
 		.ObjectW(obj1W),
 		.ObjectH(obj1H),
 		.PollX(CounterX),
-		.PollY(CounterY)
+		.PollY(CounterY),
+		.Hit(obj1Hit)
+	);
+	object obj2(
+		.clk(clk),
+		.reset(reset),
+		.ObjectX(obj2X),
+		.ObjectY(obj2Y),
+		.ObjectW(obj2W),
+		.ObjectH(obj2H),
+		.PollX(CounterX),
+		.PollY(CounterY),
+		.Hit(obj2Hit)
 	);
 	
 	/////////////////////////////////////////////////////////////////
@@ -85,10 +104,15 @@ module object_test(ClkPort, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b, Sw0, Sw
 			obj1Y <= 9'd100;
 			obj1W <= 10'd300;
 			obj1H <= 9'd100;
+			
+			obj2X <= 10'd500;
+			obj2Y <= 9'd50;
+			obj2W <= 10'd100;
+			obj2H <= 9'd400;
 		end
 		vga_r <= (obj1Hit | R) & inDisplayArea;
 		vga_g <= (obj1Hit | G) & inDisplayArea;
-		vga_b <= (obj1Hit | B) & inDisplayArea;
+		vga_b <= (obj1Hit | obj2Hit | B) & inDisplayArea;
 	end
 	
 	/////////////////////////////////////////////////////////////////

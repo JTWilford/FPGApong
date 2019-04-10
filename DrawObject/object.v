@@ -13,6 +13,7 @@
 `timescale 1ns / 1ps
 
 module object (
+	input clk,
 	input reset,
 	//input sys_clk,
 	input [9:0] ObjectX,		//Object's origin X Coordinate
@@ -29,7 +30,7 @@ module object (
 	reg hit_out;
 	
 	//Get the ADC value from JPorts
-	always @ (*)
+	always @ (posedge clk)
 	begin
 		if(reset)
 		begin
