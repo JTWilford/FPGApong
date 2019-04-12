@@ -18,7 +18,7 @@ module display_matrix (
 	//input sys_clk,
 	input [10:0] ObjectX,		//Object's origin X Coordinate
 	input [9:0] ObjectY,		//Object's origin Y Coordinate
-	input [9:0] ObjectScale,		//Object's scale factor in powers of 2
+	input [3:0] ObjectScale,		//Object's scale factor in powers of 2
 	
 	input [8:0] Matrix0,	//The 4x9 matrix to display
 	input [8:0] Matrix1,
@@ -35,9 +35,20 @@ module display_matrix (
 	reg [10:0] ObjectH;
 	reg [1:0] ScaledPollX;
 	reg [3:0] ScaledPollY;
+	wire inArea;
 	reg hit_out;
 	
-	display_matrix matrix
+	object area(
+		.clk(clk),
+		.reset(reset),
+		.ObjectX(ObjectX),
+		.ObjectY(ObjectY),
+		.ObjectW(ObjectW),
+		.ObjectH(ObjectH),
+		.PollX(PollX),
+		.PollY(PollY),
+		.Hit(inArea)
+	);
 	
 	//Get the ADC value from JPorts
 	always @ (posedge clk)
@@ -53,7 +64,7 @@ module display_matrix (
 			ObjectH = 10'd9 << ObjectScale;
 			
 			//Check if poll falls within the bounds of this object
-			if((ObjectX <= PollX & PollX <= ObjectX+ObjectW)&(ObjectY <= PollY & PollY <= ObjectY+ObjectH))
+			if(inArea)
 				begin
 					//Scale the polling coords
 					ScaledPollX = (PollX - ObjectX) >> ObjectScale;
@@ -69,7 +80,8 @@ module display_matrix (
 						hit_out <= Matrix3[ScaledPollY];
 				end
 			else
-				hit_out <= 1'b0;
+				hit_out <= 0;
+			//hit_out <= inArea;
 		end
 	end
 	

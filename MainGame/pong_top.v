@@ -72,17 +72,17 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	wire obj3Collide;
 	//-----------
 	// Number Display
-	reg [10:0] LeftSSDX,		//Object's origin X Coordinate
-	reg [9:0] LeftSSDY,			//Object's origin Y Coordinate
-	reg [9:0] LeftSSDScale,		//Object's scale factor in powers of 2
+	reg [10:0] LeftSSDX;		//Object's origin X Coordinate
+	reg [9:0] LeftSSDY;			//Object's origin Y Coordinate
+	reg [9:0] LeftSSDScale;		//Object's scale factor in powers of 2
 	
 	reg [3:0] LeftSSDValue;		//0 through 9
 	
 	wire LeftSSDHit;
 	
-	reg [10:0] RightSSDX,		//Object's origin X Coordinate
-	reg [9:0] RightSSDY,			//Object's origin Y Coordinate
-	reg [9:0] RightSSDScale,		//Object's scale factor in powers of 2
+	reg [10:0] RightSSDX;		//Object's origin X Coordinate
+	reg [9:0] RightSSDY;			//Object's origin Y Coordinate
+	reg [9:0] RightSSDScale;		//Object's scale factor in powers of 2
 	
 	reg [3:0] RightSSDValue;		//0 through 9
 	
@@ -196,7 +196,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 		.clk(clk),
 		.reset(reset),
 		.ObjectX(LeftSSDX),		//Object's origin X Coordinate
-		.ObjectY(RightSSDY),		//Object's origin Y Coordinate
+		.ObjectY(LeftSSDY),		//Object's origin Y Coordinate
 		.ObjectScale(LeftSSDScale),		//Object's scale factor in powers of 2
 		.Value(LeftSSDValue),		//0 through 9
 		.PollX(CounterX),			//Position to Poll X Coordinate
@@ -256,10 +256,10 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					ballRightX <= 11'd325;
 					
 					//SETUP SSDs
-					LeftSSDX <=;
-					LeftSSDY <=;
-					LeftSSDScale <=;
-					LeftSSDValue <= 0;
+					LeftSSDX <= 11'd255;
+					LeftSSDY <= 10'd100;
+					LeftSSDScale <= 4'd2;
+					LeftSSDValue <= 4'd0;
 					LeftSSDColor <= 8'b11111111;	//Make Left SSD white
 					
 					state <= Q_UP;
@@ -431,10 +431,10 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	wire 	[3:0]	SSD0, SSD1, SSD2, SSD3;
 	wire 	[1:0] ssdscan_clk;
 	
-	assign SSD3 = {0, 0, 0, reset};
-	assign SSD2 = {1'b0, obj3X[10:8]};
-	assign SSD1 = obj3X[7:4];
-	assign SSD0 = obj3X[3:0];
+	assign SSD3 = {2'b00, LeftSSDY[9:8]};
+	assign SSD2 = LeftSSDY[7:4];
+	assign SSD1 = LeftSSDY[3:0];
+	assign SSD0 = LeftSSDValue[3:0];
 	
 	// need a scan clk for the seven segment display 
 	// 191Hz (50MHz / 2^18) works well

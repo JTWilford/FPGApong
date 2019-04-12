@@ -18,7 +18,7 @@ module digital_ssd (
 	//input sys_clk,
 	input [10:0] ObjectX,		//Object's origin X Coordinate
 	input [9:0] ObjectY,		//Object's origin Y Coordinate
-	input [9:0] ObjectScale,		//Object's scale factor in powers of 2
+	input [3:0] ObjectScale,		//Object's scale factor in powers of 2
 	
 	input [3:0] Value,		//0 through 9
 	
@@ -28,10 +28,6 @@ module digital_ssd (
 	output Hit					//If HIGH, Then Poll Falls Within Object Bounds. Otherwise, LOW
 	);
 	
-	reg [11:0] ObjectW;
-	reg [10:0] ObjectH;
-	reg [1:0] ScaledPollX;
-	reg [3:0] ScaledPollY;
 	reg [8:0][3:0] Matrix;
 	wire hit_out;
 	
