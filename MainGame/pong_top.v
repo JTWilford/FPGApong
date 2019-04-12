@@ -20,6 +20,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	
 	//-----------
 	// Signals for Objects
+	//Ball
 	reg [10:0] obj1X;
 	reg [9:0] obj1Y;
 	reg [9:0] obj1W;
@@ -27,6 +28,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	wire obj1Hit;
 	reg [7:0] obj1Color;		//highest 3 bits for Red, next 3 bits for Green, last 2 bits for Blue
 	
+	//Right Player
 	reg [10:0] obj2X;
 	reg [9:0] obj2Y;
 	reg [9:0] obj2W;
@@ -34,12 +36,15 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	wire obj2Hit;
 	reg [7:0] obj2Color;
 	
+	//Left Player
 	reg [10:0] obj3X;
 	reg [9:0] obj3Y;
 	reg [9:0] obj3W;
 	reg [8:0] obj3H;
 	wire obj3Hit;
 	reg [7:0] obj3Color;
+	
+	//
 	//-----------
 	// Signals for Potentiometers
 	wire [7:0] potentiometer1;
@@ -65,6 +70,25 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	// Player Hitboxes
 	wire obj2Collide;
 	wire obj3Collide;
+	//-----------
+	// Number Display
+	reg [10:0] LeftSSDX,		//Object's origin X Coordinate
+	reg [9:0] LeftSSDY,			//Object's origin Y Coordinate
+	reg [9:0] LeftSSDScale,		//Object's scale factor in powers of 2
+	
+	reg [3:0] LeftSSDValue;		//0 through 9
+	
+	wire LeftSSDHit;
+	
+	reg [10:0] RightSSDX,		//Object's origin X Coordinate
+	reg [9:0] RightSSDY,			//Object's origin Y Coordinate
+	reg [9:0] RightSSDScale,		//Object's scale factor in powers of 2
+	
+	reg [3:0] RightSSDValue;		//0 through 9
+	
+	wire RightSSDHit;
+	
+	reg [7:0] LeftSSDColor;
 	//-----------
 	
 	
@@ -167,6 +191,19 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 		.Value(potentiometer2)
 	);
 	
+	//Left SSD
+	digital_ssd LeftSSD(
+		.clk(clk),
+		.reset(reset),
+		.ObjectX(LeftSSDX),		//Object's origin X Coordinate
+		.ObjectY(RightSSDY),		//Object's origin Y Coordinate
+		.ObjectScale(LeftSSDScale),		//Object's scale factor in powers of 2
+		.Value(LeftSSDValue),		//0 through 9
+		.PollX(CounterX),			//Position to Poll X Coordinate
+		.PollY(CounterY),			//Position to Poll Y Coordinate
+		.Hit(LeftSSDHit)
+	);
+	
 	/////////////////////////////////////////////////////////////////
 	///////////////		Game Logic Starts Here		/////////////////
 	/////////////////////////////////////////////////////////////////
@@ -217,6 +254,13 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					ballYSpeed <= 4'd2;
 					ballYCenter <= 10'd240;
 					ballRightX <= 11'd325;
+					
+					//SETUP SSDs
+					LeftSSDX <=;
+					LeftSSDY <=;
+					LeftSSDScale <=;
+					LeftSSDValue <= 0;
+					LeftSSDColor <= 8'b11111111;	//Make Left SSD white
 					
 					state <= Q_UP;
 					end
@@ -296,10 +340,12 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					if(obj2Collide)
 						begin
 						ballDirX <= 0;
+						LeftSSDValue <= LeftSSDValue + 1;
 						end
 					if(obj3Collide)
 						begin
 						ballDirX <= 1;
+						LeftSSDValue <= LeftSSDValue + 1;
 						end
 					state <= Q_UP;
 					end
@@ -334,6 +380,12 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 				vgaRed <= obj3Color[7:5];
 				vgaGreen <= obj3Color[4:2];
 				vgaBlue <= obj3Color[1:0];
+				end
+			else if(LeftSSDHit)
+				begin
+				vgaRed <= LeftSSDColor[7:5];
+				vgaGreen <= LeftSSDColor[4:2];
+				vgaBlue <= LeftSSDColor[1:0];
 				end
 			else
 				begin
