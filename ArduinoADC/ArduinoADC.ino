@@ -55,4 +55,32 @@ void loop() {
     digitalWrite(6, LOW);
 
   //Set Right Outputs
+  if((RPot >> 3) & 1)
+    digitalWrite(7, HIGH);
+  else
+    digitalWrite(7, LOW);
+  if((RPot >> 4) & 1)
+    digitalWrite(8, HIGH);
+  else
+    digitalWrite(8, LOW);
+  if((RPot >> 5) & 1)
+    digitalWrite(9, HIGH);
+  else
+    digitalWrite(9, LOW);
+  if((RPot >> 6) & 1)
+    digitalWrite(10, HIGH);
+  else
+    digitalWrite(10, LOW);
+  if((RPot >> 7) & 1)
+    digitalWrite(11, HIGH);
+  else
+    digitalWrite(11, LOW);
+  if((RPot >> 8) & 1)
+    digitalWrite(12, HIGH);
+  else
+    digitalWrite(12, LOW);
+  if((RPot >> 9) & 1)
+    digitalWrite(13, HIGH);
+  else
+    digitalWrite(13, LOW);
 }

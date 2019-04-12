@@ -134,31 +134,88 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	///////////////		Game Logic Starts Here		/////////////////
 	/////////////////////////////////////////////////////////////////
 	
+	reg [3:0] state;
+	
+	//STATES
+	`define Q_INIT		4'b0001;			//Initial State
+	`define Q_UP		4'b0010;			//Update Players
+	`define Q_UB		4'b0100;			//Update Ball
+	`define Q_CC		4'b1000;			//Check for Collisions
+	
 	//Update the position of the paddle based off of potentiometer
-	always @(posedge DIV_CLK[20])
+	always @(posedge DIV_CLK[18])
 		begin
-		scaledPot1 = {1'b0, potentiometer1[7:0], 1'b0};
-		scaledPot2 = {1'b0, potentiometer2[7:0], 1'b0};
-		if(scaledPot1 < 41)
-			player1Pos <= 0;
-		else
+		if(reset)
 			begin
-			scaledPot1 = scaledPot1 - 9'd41;
-			if(scaledPot1 > 430)
-				player1Pos <= 430;
-			else
-				player1Pos <= scaledPot1;
+			state <= Q_INIT;
 			end
-		
-		if(scaledPot2 < 41)
-			player2Pos <= 0;
-		else
+		case(state)
 			begin
-			scaledPot2 = scaledPot2 - 9'd41;
-			if(scaledPot2 > 430)
-				player2Pos <= 430;
-			else
-				player2Pos <= scaledPot2;
+				Q_INIT:
+					begin
+					//SETUP BALL OBJECT
+					obj1X <= 11'd315;
+					obj1Y <= 10'd235;
+					obj1W <= 10'd10;
+					obj1H <= 9'd10;
+					obj1Color <= 8'b11011011;		//Make Object 1 yellow
+					
+					//SETUP PLAYER 2 PADDLE OBJECT
+					obj2X <= 11'd620;
+					obj2Y <= 10'd0;
+					obj2W <= 10'd10;
+					obj2H <= 9'd50;
+					obj2Color <= 8'b11011011;		//Make Object 2 yellow
+					
+					//SETUP PLAYER 1 PADDLE OBJECT
+					obj3X <= 11'd20;
+					obj3Y <= 10'd0;
+					obj3W <= 10'd10;
+					obj3H <= 9'd50;
+					obj3Color <= 8'b11011011;		//Make Object 3 yellow
+					
+					state <= Q_UP;
+					end
+				Q_UP:
+					begin
+					//Scale the pots from 7-bit to 9-bit
+					scaledPot1 = {1'b0, potentiometer1[7:0], 1'b0};
+					scaledPot2 = {1'b0, potentiometer2[7:0], 1'b0};
+					
+					//Add deadzone to player 1 pot
+					if(scaledPot1 < 41)
+						player1Pos <= 0;
+					else
+						begin
+						scaledPot1 = scaledPot1 - 9'd41;
+						if(scaledPot1 > 430)
+							player1Pos <= 430;
+						else
+							player1Pos <= scaledPot1;
+						end
+					
+					//Add deadzone to player 2 pot
+					if(scaledPot2 < 41)
+						player2Pos <= 0;
+					else
+						begin
+						scaledPot2 = scaledPot2 - 9'd41;
+						if(scaledPot2 > 430)
+							player2Pos <= 430;
+						else
+							player2Pos <= scaledPot2;
+						end
+					
+					state <= Q_UB;
+					end
+				Q_UB:
+					begin
+					state <= Q_CC;
+					end
+				Q_CC
+					begin
+					state <= Q_UP;
+					end
 			end
 		end
 	
@@ -195,19 +252,19 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 				begin
 				vgaRed <= obj1Color[7:5];
 				vgaGreen <= obj1Color[4:2];
-				vgaBlue <= {0, obj1Color[1:0]};
+				vgaBlue <= obj1Color[1:0];
 				end
 			else if(obj2Hit)
 				begin
 				vgaRed <= obj2Color[7:5];
 				vgaGreen <= obj2Color[4:2];
-				vgaBlue <= {obj2Color[1:0],0};
+				vgaBlue <= obj2Color[1:0];
 				end
 			else if(obj3Hit)
 				begin
 				vgaRed <= obj3Color[7:5];
 				vgaGreen <= obj3Color[4:2];
-				vgaBlue <= {obj3Color[1:0],0};
+				vgaBlue <= obj3Color[1:0];
 				end
 			else
 				begin
@@ -237,14 +294,6 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	/////////////////////////////////////////////////////////////////
 	//////////////  	  LD control starts here 	 ///////////////////
 	/////////////////////////////////////////////////////////////////
-	`define QI 			2'b00
-	`define QGAME_1 	2'b01
-	`define QGAME_2 	2'b10
-	`define QDONE 		2'b11
-	
-	reg [3:0] p2_score;
-	reg [3:0] p1_score;
-	reg [1:0] state;
 	wire LD0, LD1, LD2, LD3, LD4, LD5, LD6, LD7;
 	
 	assign LD0 = player2Pos[0];
