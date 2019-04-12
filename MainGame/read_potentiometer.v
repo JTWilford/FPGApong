@@ -30,7 +30,8 @@ module read_potentiometer (
 		end
 		else
 		begin
-			val_out[7:0] <= JPorts[7:0];
+			val_out[7:1] <= JPorts[6:0];
+			val_out[0] <= 0;
 		end
 	end
 	
