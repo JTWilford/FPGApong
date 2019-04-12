@@ -3,18 +3,21 @@
 // VGA verilog template
 // Author:  Da Cheng
 //////////////////////////////////////////////////////////////////////////////////
-module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, Sw0, Sw1, btnU, btnD,
+module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU, btnD,
 	St_ce_bar, St_rp_bar, Mt_ce_bar, Mt_St_oe_bar, Mt_St_we_bar,
 	An0, An1, An2, An3, Ca, Cb, Cc, Cd, Ce, Cf, Cg, Dp,
 	LD0, LD1, LD2, LD3, LD4, LD5, LD6, LD7,
-	JA, JB);
-	input ClkPort, Sw0, btnU, btnD, Sw0, Sw1;
+	JA, JB,
+	Sw);
+	input ClkPort, btnU, btnD;
 	input [7:0] JA, JB;
+	input [7:0] Sw;
 	output St_ce_bar, St_rp_bar, Mt_ce_bar, Mt_St_oe_bar, Mt_St_we_bar;
 	output vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue;
 	output An0, An1, An2, An3, Ca, Cb, Cc, Cd, Ce, Cf, Cg, Dp;
 	output LD0, LD1, LD2, LD3, LD4, LD5, LD6, LD7;
 	reg [2:0] vgaRed, vgaGreen, vgaBlue;
+	
 	//-----------
 	// Signals for Objects
 	reg [10:0] obj1X;
@@ -56,8 +59,10 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, Sw0,
 	wire	reset, start, ClkPort, board_clk, clk, button_clk;
 	
 	BUF BUF1 (board_clk, ClkPort); 	
-	BUF BUF2 (reset, Sw0);
-	BUF BUF3 (start, Sw1);
+	BUF BUF2 (reset, BtnU);
+	BUF BUF3 (start, BtnD);
+	BUF BUF3 (start, BtnD);
+	BUF BUF3 (start, BtnD);
 	
 	reg [27:0]	DIV_CLK;
 	always @ (posedge board_clk, posedge reset)  
@@ -112,21 +117,30 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, Sw0,
 		.Hit(obj3Hit)
 	);
 	
+	//Read potentiometer 1
 	read_potentiometer pot1(
 		.sys_clk(clk),
 		.reset(reset),
 		.JPorts(JA[7:0]),
 		.Value(potentiometer1)
 	);
+	//Read potentiometer 2
+	read_potentiometer pot2(
+		.sys_clk(clk),
+		.reset(reset),
+		.JPorts(JB[7:0]),
+		.Value(potentiometer2)
+	);
 	
 	/////////////////////////////////////////////////////////////////
-	///////////////		VGA control starts here		/////////////////
+	///////////////		Game Logic Starts Here		/////////////////
 	/////////////////////////////////////////////////////////////////
 	
 	//Update the position of the paddle based off of potentiometer
 	always @(posedge DIV_CLK[20])
 		begin
 		scaledPot1 = {1'b0, potentiometer1[7:0], 1'b0};
+		scaledPot2 = {1'b0, potentiometer2[7:0], 1'b0};
 		if(scaledPot1 < 41)
 			player1Pos <= 0;
 		else
@@ -137,29 +151,45 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, Sw0,
 			else
 				player1Pos <= scaledPot1;
 			end
+		
+		if(scaledPot2 < 41)
+			player2Pos <= 0;
+		else
+			begin
+			scaledPot2 = scaledPot2 - 9'd41;
+			if(scaledPot2 > 430)
+				player2Pos <= 430;
+			else
+				player2Pos <= scaledPot2;
+			end
 		end
 	
+	/////////////////////////////////////////////////////////////////
+	///////////////		VGA control starts here		/////////////////
+	/////////////////////////////////////////////////////////////////
+	
+	//Rendering Block
 	always @(posedge clk)
 	begin
 		if(reset)
 			begin
 			obj1X <= 11'd100;
 			obj1Y <= 10'd100;
-			obj1W <= 10'd300;
-			obj1H <= 9'd100;
-			obj1Color <= 8'b11100000;		//Make Object 1 all red
+			obj1W <= 10'd10;
+			obj1H <= 9'd10;
+			obj1Color <= 8'b11011011;		//Make Object 1 yellow
 			
-			obj2X <= 11'd500;
-			obj2Y <= 10'd50;
-			obj2W <= 10'd100;
-			obj2H <= 9'd400;
-			obj2Color <= 8'b000001110;		//Make Object 2 greenish-blue
+			obj2X <= 11'd620;
+			obj2Y <= 10'd0;
+			obj2W <= 10'd10;
+			obj2H <= 9'd50;
+			obj2Color <= 8'b11011011;		//Make Object 2 yellow
 			
 			obj3X <= 11'd20;
 			obj3Y <= 10'd0;
 			obj3W <= 10'd10;
 			obj3H <= 9'd50;
-			obj3Color <= 8'b11011011;		//Make Object 3 white
+			obj3Color <= 8'b11011011;		//Make Object 3 yellow
 			end
 		if(inDisplayArea)
 			begin
@@ -195,6 +225,11 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, Sw0,
 			vgaBlue <= 3'b000;
 			end
 		obj3Y <= player1Pos;
+		obj2Y <= player2Pos;
+		
+		obj1Color <= Sw[7:0];
+		obj2Color <= Sw[7:0];
+		obj3Color <= Sw[7:0];
 	end
 	
 	/////////////////////////////////////////////////////////////////
