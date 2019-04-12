@@ -159,7 +159,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, Sw0,
 			obj3Y <= 10'd0;
 			obj3W <= 10'd10;
 			obj3H <= 9'd50;
-			obj3Color <= 8'b11111111;		//Make Object 3 white
+			obj3Color <= 8'b11011011;		//Make Object 3 white
 			end
 		if(inDisplayArea)
 			begin
@@ -184,7 +184,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, Sw0,
 			else
 				begin
 				vgaRed <= 3'b000;
-				vgaGreen <= 3'b111;
+				vgaGreen <= 3'b000;
 				vgaBlue <= 3'b000;
 				end
 			end
