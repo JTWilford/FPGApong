@@ -195,7 +195,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 				begin
 				vgaRed <= obj1Color[7:5];
 				vgaGreen <= obj1Color[4:2];
-				vgaBlue <= {obj1Color[1:0],0};
+				vgaBlue <= {0, obj1Color[1:0]};
 				end
 			else if(obj2Hit)
 				begin
@@ -247,16 +247,14 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	reg [1:0] state;
 	wire LD0, LD1, LD2, LD3, LD4, LD5, LD6, LD7;
 	
-	assign LD0 = (p1_score == 4'b1010);
-	assign LD1 = (p2_score == 4'b1010);
-	
-	assign LD2 = start;
-	assign LD4 = reset;
-	
-	assign LD3 = (state == `QI);
-	assign LD5 = (state == `QGAME_1);	
-	assign LD6 = (state == `QGAME_2);
-	assign LD7 = (state == `QDONE);
+	assign LD0 = player2Pos[0];
+	assign LD1 = player2Pos[1];
+	assign LD2 = player2Pos[2];
+	assign LD3 = player2Pos[3];
+	assign LD4 = player2Pos[4];
+	assign LD5 = player2Pos[5];
+	assign LD6 = player2Pos[6];
+	assign LD7 = player2Pos[7];
 	
 	/////////////////////////////////////////////////////////////////
 	//////////////  	  LD control ends here 	 	////////////////////
@@ -302,8 +300,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	// Following is Hex-to-SSD conversion
 	always @ (SSD) 
 	begin : HEX_TO_SSD
-		case (SSD)		
-			4'b1111: SSD_CATHODES = 7'b1111111 ; //Nothing 
+		case (SSD)
 			4'b0000: SSD_CATHODES = 7'b0000001 ; //0
 			4'b0001: SSD_CATHODES = 7'b1001111 ; //1
 			4'b0010: SSD_CATHODES = 7'b0010010 ; //2
@@ -315,6 +312,11 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 			4'b1000: SSD_CATHODES = 7'b0000000 ; //8
 			4'b1001: SSD_CATHODES = 7'b0000100 ; //9
 			4'b1010: SSD_CATHODES = 7'b0001000 ; //10 or A
+			4'b1011: SSD_CATHODES = 7'b0000000 ; //11 or B
+			4'b1100: SSD_CATHODES = 7'b0110001 ; //12 or C
+			4'b1101: SSD_CATHODES = 7'b0000001 ; //13 or D
+			4'b1110: SSD_CATHODES = 7'b0001000 ; //14 or E
+			4'b1111: SSD_CATHODES = 7'b0111000 ; //15 or F
 			default: SSD_CATHODES = 7'bXXXXXXX ; // default is not needed as we covered all cases
 		endcase
 	end
