@@ -51,6 +51,21 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	reg [9:0] player1Pos;
 	reg [9:0] player2Pos;
 	//-----------
+	// Registers for Ball position and motion
+	reg [10:0] ballX;
+	reg [9:0] ballY;
+	reg ballDirX;
+	reg ballDirY;
+	reg [3:0] ballXSpeed;
+	reg [3:0] ballYSpeed;
+	
+	reg [9:0] ballYCenter;
+	reg [10:0] ballRightX;
+	//-----------
+	// Player Hitboxes
+	wire obj2Collide;
+	wire obj3Collide;
+	//-----------
 	
 	
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -103,6 +118,17 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 		.PollY(CounterY),
 		.Hit(obj2Hit)
 	);
+	object obj2Collision(
+		.clk(clk),
+		.reset(reset),
+		.ObjectX(obj2X),
+		.ObjectY(obj2Y),
+		.ObjectW(obj2W),
+		.ObjectH(obj2H),
+		.PollX(ballRightX),
+		.PollY(ballYCenter),
+		.Hit(obj2Collide)
+	);
 	object obj3(
 		.clk(clk),
 		.reset(reset),
@@ -110,9 +136,20 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 		.ObjectY(obj3Y),
 		.ObjectW(obj3W),
 		.ObjectH(obj3H),
-		.PollX(CounterX),
-		.PollY(CounterY),
+		.PollX(counterX),
+		.PollY(counterY),
 		.Hit(obj3Hit)
+	);
+	object obj3Collision(
+		.clk(clk),
+		.reset(reset),
+		.ObjectX(obj3X),
+		.ObjectY(obj3Y),
+		.ObjectW(obj3W),
+		.ObjectH(obj3H),
+		.PollX(ballX),
+		.PollY(ballYCenter),
+		.Hit(obj3Collide)
 	);
 	
 	//Read potentiometer 1
@@ -138,7 +175,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	
 	//STATES
 	localparam 	
-	Q_INIT = 4'b0001, Q_UP = 4'b0010, Q_UB = 4'b0100, Q_CC = 4'b1000, Q_UNK = 4'bXXXX;
+	Q_INIT = 5'b00001, Q_UP = 5'b00010, Q_UB = 5'b00100, Q_UBC = 5'b01000, Q_CC = 5'b10000, Q_UNK = 5'bXXXXX;
 	
 	//Update the position of the paddle based off of potentiometer
 	always @(posedge DIV_CLK[18])
@@ -170,6 +207,14 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					obj3W <= 10'd10;
 					obj3H <= 9'd50;
 					obj3Color <= 8'b11011011;		//Make Object 3 yellow
+					
+					//SETUP BALL MOTION
+					ballX <= 11'd315;
+					ballY <= 10'd235;
+					ballDirX <= 1'b1;
+					ballDirY <= 1'b0;
+					ballXSpeed <= 4'd2;
+					ballYSpeed <= 4'd2;
 					
 					state <= Q_UP;
 					end
@@ -205,7 +250,6 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					obj3Y <= player1Pos;
 					obj2Y <= player2Pos;
 					
-					obj1Color <= Sw[7:0];
 					obj2Color <= Sw[7:0];
 					obj3Color <= Sw[7:0];
 					
@@ -213,10 +257,43 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					end
 				Q_UB:
 					begin
+					if(ballDirX)
+						obj1X <= obj1X + ballXSpeed;
+					else
+						obj1X <= obj1X - ballXSpeed;
+						
+					if(ballDirY)
+						obj1Y <= obj1Y + ballYSpeed;
+					else
+						obj1Y <= obj1Y - ballYSpeed;
+					
+					obj1Color <= Sw[7:0];
+					state <= Q_UBC;
+					end
+				Q_UBC:
+					begin
+					ballYCenter <= ballY + 5;
+					ballRightX <= ballX + 10;
+					
 					state <= Q_CC;
 					end
 				Q_CC:
 					begin
+					//Check if ball hit the bounds of the screen
+					if(obj1X == 11'd0 || obj1X == 11'd640)
+						ballDirX <= ~ballDirX;
+					if(obj1Y == 10'd0 || obj1Y == 10'd480)
+						ballDirY <= ~ballDirY;
+						
+					//Check if ball hit a player paddle
+					if(obj2Collide)
+						begin
+						ballDirX <= 0;
+						end
+					if(obj3Collide)
+						begin
+						ballDirX <= 1;
+						end
 					state <= Q_UP;
 					end
 				default:
