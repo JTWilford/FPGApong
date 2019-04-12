@@ -61,8 +61,6 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	BUF BUF1 (board_clk, ClkPort); 	
 	BUF BUF2 (reset, BtnU);
 	BUF BUF3 (start, BtnD);
-	BUF BUF3 (start, BtnD);
-	BUF BUF3 (start, BtnD);
 	
 	reg [27:0]	DIV_CLK;
 	always @ (posedge board_clk, posedge reset)  
