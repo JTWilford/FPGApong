@@ -118,7 +118,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 		.PollY(CounterY),
 		.Hit(obj2Hit)
 	);
-	object obj2Collision(
+	/*object obj2Collision(
 		.clk(clk),
 		.reset(reset),
 		.ObjectX(obj2X),
@@ -128,7 +128,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 		.PollX(ballRightX),
 		.PollY(ballYCenter),
 		.Hit(obj2Collide)
-	);
+	);*/
 	object obj3(
 		.clk(clk),
 		.reset(reset),
@@ -140,7 +140,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 		.PollY(counterY),
 		.Hit(obj3Hit)
 	);
-	object obj3Collision(
+	/*object obj3Collision(
 		.clk(clk),
 		.reset(reset),
 		.ObjectX(obj3X),
@@ -150,7 +150,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 		.PollX(ballX),
 		.PollY(ballYCenter),
 		.Hit(obj3Collide)
-	);
+	);*/
 	
 	//Read potentiometer 1
 	read_potentiometer pot1(
@@ -171,7 +171,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	///////////////		Game Logic Starts Here		/////////////////
 	/////////////////////////////////////////////////////////////////
 	
-	reg [3:0] state;
+	reg [4:0] state;
 	
 	//STATES
 	localparam 	
@@ -215,6 +215,8 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					ballDirY <= 1'b0;
 					ballXSpeed <= 4'd2;
 					ballYSpeed <= 4'd2;
+					ballYCenter <= 10'd240;
+					ballRightX <= 11'd325;
 					
 					state <= Q_UP;
 					end
