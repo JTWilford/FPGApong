@@ -150,8 +150,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 			state <= Q_INIT;
 			end
 		case(state)
-			begin
-				Q_INIT:
+				`Q_INIT:
 					begin
 					//SETUP BALL OBJECT
 					obj1X <= 11'd315;
@@ -176,7 +175,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					
 					state <= Q_UP;
 					end
-				Q_UP:
+				`Q_UP:
 					begin
 					//Scale the pots from 7-bit to 9-bit
 					scaledPot1 = {1'b0, potentiometer1[7:0], 1'b0};
@@ -208,15 +207,15 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					
 					state <= Q_UB;
 					end
-				Q_UB:
+				`Q_UB:
 					begin
 					state <= Q_CC;
 					end
-				Q_CC
+				`Q_CC:
 					begin
 					state <= Q_UP;
 					end
-			end
+			endcase
 		end
 	
 	/////////////////////////////////////////////////////////////////
