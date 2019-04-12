@@ -60,7 +60,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	
 	BUF BUF1 (board_clk, ClkPort); 	
 	BUF BUF2 (reset, BtnU);
-	BUF BUF3 (start, BtnD);
+	BUF BUF3 (start, ~BtnD);
 	
 	reg [27:0]	DIV_CLK;
 	always @ (posedge board_clk, posedge reset)  
@@ -137,10 +137,8 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	reg [3:0] state;
 	
 	//STATES
-	`define Q_INIT		4'b0001;			//Initial State
-	`define Q_UP		4'b0010;			//Update Players
-	`define Q_UB		4'b0100;			//Update Ball
-	`define Q_CC		4'b1000;			//Check for Collisions
+	localparam 	
+	Q_INIT = 4'b0001, Q_UP = 4'b0010, Q_UB = 4'b0100, Q_CC = 4'b1000, Q_UNK = 4'bXXXX;
 	
 	//Update the position of the paddle based off of potentiometer
 	always @(posedge DIV_CLK[18])
@@ -150,7 +148,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 			state <= Q_INIT;
 			end
 		case(state)
-				`Q_INIT:
+				Q_INIT:
 					begin
 					//SETUP BALL OBJECT
 					obj1X <= 11'd315;
@@ -175,7 +173,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					
 					state <= Q_UP;
 					end
-				`Q_UP:
+				Q_UP:
 					begin
 					//Scale the pots from 7-bit to 9-bit
 					scaledPot1 = {1'b0, potentiometer1[7:0], 1'b0};
@@ -204,17 +202,25 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 						else
 							player2Pos <= scaledPot2;
 						end
+					obj3Y <= player1Pos;
+					obj2Y <= player2Pos;
+					
+					obj1Color <= Sw[7:0];
+					obj2Color <= Sw[7:0];
+					obj3Color <= Sw[7:0];
 					
 					state <= Q_UB;
 					end
-				`Q_UB:
+				Q_UB:
 					begin
 					state <= Q_CC;
 					end
-				`Q_CC:
+				Q_CC:
 					begin
 					state <= Q_UP;
 					end
+				default:
+					state <= Q_INIT;
 			endcase
 		end
 	
@@ -225,26 +231,6 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	//Rendering Block
 	always @(posedge clk)
 	begin
-		if(reset)
-			begin
-			obj1X <= 11'd100;
-			obj1Y <= 10'd100;
-			obj1W <= 10'd10;
-			obj1H <= 9'd10;
-			obj1Color <= 8'b11011011;		//Make Object 1 yellow
-			
-			obj2X <= 11'd620;
-			obj2Y <= 10'd0;
-			obj2W <= 10'd10;
-			obj2H <= 9'd50;
-			obj2Color <= 8'b11011011;		//Make Object 2 yellow
-			
-			obj3X <= 11'd20;
-			obj3Y <= 10'd0;
-			obj3W <= 10'd10;
-			obj3H <= 9'd50;
-			obj3Color <= 8'b11011011;		//Make Object 3 yellow
-			end
 		if(inDisplayArea)
 			begin
 			if(obj1Hit)
@@ -278,12 +264,6 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 			vgaGreen <= 3'b000;
 			vgaBlue <= 3'b000;
 			end
-		obj3Y <= player1Pos;
-		obj2Y <= player2Pos;
-		
-		obj1Color <= Sw[7:0];
-		obj2Color <= Sw[7:0];
-		obj3Color <= Sw[7:0];
 	end
 	
 	/////////////////////////////////////////////////////////////////
@@ -315,10 +295,10 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	wire 	[3:0]	SSD0, SSD1, SSD2, SSD3;
 	wire 	[1:0] ssdscan_clk;
 	
-	assign SSD3 = 4'b1111;
+	assign SSD3 = {0, 0, 0, reset};
 	assign SSD2 = {3'b000, player1Pos[8]};
 	assign SSD1 = player1Pos[7:4];
-	assign SSD0 = player1Pos[3:0];
+	assign SSD0 = state[3:0];
 	
 	// need a scan clk for the seven segment display 
 	// 191Hz (50MHz / 2^18) works well
