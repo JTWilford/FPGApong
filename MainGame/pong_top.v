@@ -99,8 +99,8 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	object obj1(
 		.clk(clk),
 		.reset(reset),
-		.ObjectX(obj1X),
-		.ObjectY(obj1Y),
+		.ObjectX(ballX),
+		.ObjectY(ballY),
 		.ObjectW(obj1W),
 		.ObjectH(obj1H),
 		.PollX(CounterX),
@@ -118,7 +118,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 		.PollY(CounterY),
 		.Hit(obj2Hit)
 	);
-	/*object obj2Collision(
+	object obj2Collision(
 		.clk(clk),
 		.reset(reset),
 		.ObjectX(obj2X),
@@ -128,7 +128,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 		.PollX(ballRightX),
 		.PollY(ballYCenter),
 		.Hit(obj2Collide)
-	);*/
+	);
 	object obj3(
 		.clk(clk),
 		.reset(reset),
@@ -136,11 +136,11 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 		.ObjectY(obj3Y),
 		.ObjectW(obj3W),
 		.ObjectH(obj3H),
-		.PollX(counterX),
-		.PollY(counterY),
+		.PollX(CounterX),
+		.PollY(CounterY),
 		.Hit(obj3Hit)
 	);
-	/*object obj3Collision(
+	object obj3Collision(
 		.clk(clk),
 		.reset(reset),
 		.ObjectX(obj3X),
@@ -150,7 +150,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 		.PollX(ballX),
 		.PollY(ballYCenter),
 		.Hit(obj3Collide)
-	);*/
+	);
 	
 	//Read potentiometer 1
 	read_potentiometer pot1(
@@ -188,21 +188,21 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 				Q_INIT:
 					begin
 					//SETUP BALL OBJECT
-					obj1X <= 11'd315;
-					obj1Y <= 10'd235;
+					ballX <= 11'd315;
+					ballY <= 10'd235;
 					obj1W <= 10'd10;
 					obj1H <= 9'd10;
 					obj1Color <= 8'b11011011;		//Make Object 1 yellow
 					
 					//SETUP PLAYER 2 PADDLE OBJECT
-					obj2X <= 11'd620;
+					obj2X <= 11'd600;
 					obj2Y <= 10'd0;
 					obj2W <= 10'd10;
 					obj2H <= 9'd50;
 					obj2Color <= 8'b11011011;		//Make Object 2 yellow
 					
 					//SETUP PLAYER 1 PADDLE OBJECT
-					obj3X <= 11'd20;
+					obj3X <= 11'd40;
 					obj3Y <= 10'd0;
 					obj3W <= 10'd10;
 					obj3H <= 9'd50;
@@ -228,26 +228,26 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					
 					//Add deadzone to player 1 pot
 					if(scaledPot1 < 41)
-						player1Pos <= 0;
+						player1Pos = 0;
 					else
 						begin
 						scaledPot1 = scaledPot1 - 9'd41;
 						if(scaledPot1 > 430)
-							player1Pos <= 430;
+							player1Pos = 430;
 						else
-							player1Pos <= scaledPot1;
+							player1Pos = scaledPot1;
 						end
 					
 					//Add deadzone to player 2 pot
 					if(scaledPot2 < 41)
-						player2Pos <= 0;
+						player2Pos = 0;
 					else
 						begin
 						scaledPot2 = scaledPot2 - 9'd41;
 						if(scaledPot2 > 430)
-							player2Pos <= 430;
+							player2Pos = 430;
 						else
-							player2Pos <= scaledPot2;
+							player2Pos = scaledPot2;
 						end
 					obj3Y <= player1Pos;
 					obj2Y <= player2Pos;
@@ -260,16 +260,17 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 				Q_UB:
 					begin
 					if(ballDirX)
-						obj1X <= obj1X + ballXSpeed;
+						ballX <= ballX + ballXSpeed;
 					else
-						obj1X <= obj1X - ballXSpeed;
+						ballX <= ballX - ballXSpeed;
 						
 					if(ballDirY)
-						obj1Y <= obj1Y + ballYSpeed;
+						ballY <= ballY + ballYSpeed;
 					else
-						obj1Y <= obj1Y - ballYSpeed;
+						ballY <= ballY - ballYSpeed;
 					
 					obj1Color <= Sw[7:0];
+					
 					state <= Q_UBC;
 					end
 				Q_UBC:
@@ -282,10 +283,14 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 				Q_CC:
 					begin
 					//Check if ball hit the bounds of the screen
-					if(obj1X == 11'd0 || obj1X == 11'd640)
-						ballDirX <= ~ballDirX;
-					if(obj1Y == 10'd0 || obj1Y == 10'd480)
-						ballDirY <= ~ballDirY;
+					if(ballX < ballXSpeed)
+						ballDirX <= 1;
+					if(ballX >= 11'd630)
+						ballDirX <= 0;
+					if(ballY < ballYSpeed)
+						ballDirY <= 1;
+					if(ballY >= 10'd470)
+						ballDirY <= 0;
 						
 					//Check if ball hit a player paddle
 					if(obj2Collide)
@@ -354,14 +359,14 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	/////////////////////////////////////////////////////////////////
 	wire LD0, LD1, LD2, LD3, LD4, LD5, LD6, LD7;
 	
-	assign LD0 = player2Pos[0];
-	assign LD1 = player2Pos[1];
-	assign LD2 = player2Pos[2];
-	assign LD3 = player2Pos[3];
-	assign LD4 = player2Pos[4];
-	assign LD5 = player2Pos[5];
-	assign LD6 = player2Pos[6];
-	assign LD7 = player2Pos[7];
+	assign LD0 = player1Pos[0];
+	assign LD1 = player1Pos[1];
+	assign LD2 = player1Pos[2];
+	assign LD3 = player1Pos[3];
+	assign LD4 = player1Pos[4];
+	assign LD5 = player1Pos[5];
+	assign LD6 = player1Pos[6];
+	assign LD7 = player1Pos[7];
 	
 	/////////////////////////////////////////////////////////////////
 	//////////////  	  LD control ends here 	 	////////////////////
@@ -375,9 +380,9 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	wire 	[1:0] ssdscan_clk;
 	
 	assign SSD3 = {0, 0, 0, reset};
-	assign SSD2 = {3'b000, player1Pos[8]};
-	assign SSD1 = player1Pos[7:4];
-	assign SSD0 = state[3:0];
+	assign SSD2 = {1'b0, obj3X[10:8]};
+	assign SSD1 = obj3X[7:4];
+	assign SSD0 = obj3X[3:0];
 	
 	// need a scan clk for the seven segment display 
 	// 191Hz (50MHz / 2^18) works well
