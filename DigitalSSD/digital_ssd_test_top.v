@@ -3,7 +3,7 @@
 // VGA verilog template
 // Author:  Da Cheng
 //////////////////////////////////////////////////////////////////////////////////
-module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU, btnD,
+module digital_ssd_test_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU, btnD,
 	St_ce_bar, St_rp_bar, Mt_ce_bar, Mt_St_oe_bar, Mt_St_we_bar,
 	An0, An1, An2, An3, Ca, Cb, Cc, Cd, Ce, Cf, Cg, Dp,
 	LD0, LD1, LD2, LD3, LD4, LD5, LD6, LD7,
@@ -22,11 +22,12 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	// Number Display
 	reg [10:0] LeftSSDX;		//Object's origin X Coordinate
 	reg [9:0] LeftSSDY;			//Object's origin Y Coordinate
-	reg [3:0] LeftSSDScale;		//Object's scale factor in powers of 2
+	wire [3:0] LeftSSDScale;		//Object's scale factor in powers of 2
 	
-	reg [3:0] LeftSSDValue;		//0 through 9
+	wire [3:0] LeftSSDValue;		//0 through 9
 	
 	wire LeftSSDHit;
+	wire LeftSSDBg;
 	
 	reg [10:0] RightSSDX;		//Object's origin X Coordinate
 	reg [9:0] RightSSDY;			//Object's origin Y Coordinate
@@ -37,6 +38,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	wire RightSSDHit;
 	
 	reg [7:0] LeftSSDColor;
+	reg [7:0] LeftSSDBgColor;
 	//-----------
 	
 	
@@ -78,7 +80,8 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 		.Value(LeftSSDValue),		//0 through 9
 		.PollX(CounterX),			//Position to Poll X Coordinate
 		.PollY(CounterY),			//Position to Poll Y Coordinate
-		.Hit(LeftSSDHit)
+		.Hit(LeftSSDHit),
+		.Hit2(LeftSSDBg)
 	);
 	
 	/////////////////////////////////////////////////////////////////
@@ -94,6 +97,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 				LeftSSDX <= 11'd255;
 				LeftSSDY <= 10'd220;
 				LeftSSDColor <= 8'b11111111;	//Make Left SSD white
+				LeftSSDBgColor <= 8'b11100000;
 			end
 		end
 	
@@ -109,6 +113,12 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 				vgaRed <= 3'b000;
 				vgaGreen <= 3'b000;
 				vgaBlue <= 3'b000;
+				if(LeftSSDBg)
+					begin
+					vgaRed <= LeftSSDBgColor[7:5];
+					vgaGreen <= LeftSSDBgColor[4:2];
+					vgaBlue <= LeftSSDBgColor[1:0];
+					end
 				if(LeftSSDHit)
 					begin
 					vgaRed <= LeftSSDColor[7:5];
@@ -135,6 +145,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	//////////////  	  LD control starts here 	 ///////////////////
 	/////////////////////////////////////////////////////////////////
 	wire LD0, LD1, LD2, LD3, LD4, LD5, LD6, LD7;
+	assign {LD0, LD1, LD2, LD3, LD4, LD5, LD6, LD7} = 8'b00000000;
 	
 	/////////////////////////////////////////////////////////////////
 	//////////////  	  LD control ends here 	 	////////////////////
