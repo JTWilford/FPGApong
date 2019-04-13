@@ -76,7 +76,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	reg [9:0] LeftSSDY;			//Object's origin Y Coordinate
 	reg [9:0] LeftSSDScale;		//Object's scale factor in powers of 2
 	
-	reg [3:0] LeftSSDValue;		//0 through 9
+	reg [3:0] P1Score;		//0 through 9
 	
 	wire LeftSSDHit;
 	
@@ -84,7 +84,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	reg [9:0] RightSSDY;			//Object's origin Y Coordinate
 	reg [9:0] RightSSDScale;		//Object's scale factor in powers of 2
 	
-	reg [3:0] RightSSDValue;		//0 through 9
+	reg [3:0] P2Score;		//0 through 9
 	
 	wire RightSSDHit;
 	
@@ -198,24 +198,37 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 		.ObjectX(LeftSSDX),		//Object's origin X Coordinate
 		.ObjectY(LeftSSDY),		//Object's origin Y Coordinate
 		.ObjectScale(LeftSSDScale),		//Object's scale factor in powers of 2
-		.Value(LeftSSDValue),		//0 through 9
+		.Value(P1Score),		//0 through 9
 		.PollX(CounterX),			//Position to Poll X Coordinate
 		.PollY(CounterY),			//Position to Poll Y Coordinate
 		.Hit(LeftSSDHit)
+	);
+	
+	//Right SSD
+	digital_ssd LeftSSD(
+		.clk(clk),
+		.reset(reset),
+		.ObjectX(RightSSDX),		//Object's origin X Coordinate
+		.ObjectY(RightSSDY),		//Object's origin Y Coordinate
+		.ObjectScale(RightSSDScale),		//Object's scale factor in powers of 2
+		.Value(P2Score),		//0 through 9
+		.PollX(CounterX),			//Position to Poll X Coordinate
+		.PollY(CounterY),			//Position to Poll Y Coordinate
+		.Hit(RightSSDHit)
 	);
 	
 	/////////////////////////////////////////////////////////////////
 	///////////////		Game Logic Starts Here		/////////////////
 	/////////////////////////////////////////////////////////////////
 	
-	reg [4:0] state;
+	reg [6:0] state;
 	
 	//STATES
 	localparam 	
-	Q_INIT = 5'b00001, Q_UP = 5'b00010, Q_UB = 5'b00100, Q_UBC = 5'b01000, Q_CC = 5'b10000, Q_UNK = 5'bXXXXX;
+	Q_INIT = 7'b0000001, Q_UP = 7'b0000010, Q_UB = 7'b0000100, Q_UBC = 7'b0001000, Q_CC = 7'b0010000, Q_P1S = 7'b0100000, Q_P2S = 7'b1000000, Q_UNK = 7'bXXXXXXX;
 	
 	//Update the position of the paddle based off of potentiometer
-	always @(posedge DIV_CLK[18])
+	always @(posedge DIV_CLK[16])
 		begin
 		if(reset)
 			begin
@@ -225,8 +238,6 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 				Q_INIT:
 					begin
 					//SETUP BALL OBJECT
-					ballX <= 11'd315;
-					ballY <= 10'd235;
 					obj1W <= 10'd10;
 					obj1H <= 9'd10;
 					obj1Color <= 8'b11011011;		//Make Object 1 yellow
@@ -250,8 +261,8 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					ballY <= 10'd235;
 					ballDirX <= 1'b1;
 					ballDirY <= 1'b0;
-					ballXSpeed <= 4'd2;
-					ballYSpeed <= 4'd2;
+					ballXSpeed <= 4'd1;
+					ballYSpeed <= 4'd1;
 					ballYCenter <= 10'd240;
 					ballRightX <= 11'd325;
 					
@@ -259,8 +270,14 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					LeftSSDX <= 11'd255;
 					LeftSSDY <= 10'd100;
 					LeftSSDScale <= 4'd2;
-					LeftSSDValue <= 4'd0;
+					P1Score <= 4'd0;
 					LeftSSDColor <= 8'b11111111;	//Make Left SSD white
+					
+					RightSSDX <= 11'd345;
+					RightSSDY <= 10'd100;
+					RightSSDScale <= 4'd2;
+					P2Score <= 4'd0;
+					RightSSDColor <= 8'b11111111;	//Make Left SSD white
 					
 					state <= Q_UP;
 					end
@@ -298,6 +315,8 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					
 					obj2Color <= Sw[7:0];
 					obj3Color <= Sw[7:0];
+					LeftSSDColor <= Sw[7:0];
+					RightSSDColor <= Sw[7:0];
 					
 					state <= Q_UB;
 					end
@@ -326,27 +345,57 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					end
 				Q_CC:
 					begin
+					state <= Q_UP;
 					//Check if ball hit the bounds of the screen
-					if(ballX < ballXSpeed)
-						ballDirX <= 1;
-					if(ballX >= 11'd630)
-						ballDirX <= 0;
-					if(ballY < ballYSpeed)
+					if(ballX < ballXSpeed)		//Hit Player 1's goal
+						state <= Q_P2S;
+					if(ballX >= 11'd630)		//Hit Player 2's goal
+						state <= Q_P1S;
+					if(ballY < ballYSpeed)		//Hit top of screen
 						ballDirY <= 1;
-					if(ballY >= 10'd470)
+					if(ballY >= 10'd470)		//Hit bottom of screen
 						ballDirY <= 0;
 						
 					//Check if ball hit a player paddle
 					if(obj2Collide)
 						begin
 						ballDirX <= 0;
-						LeftSSDValue <= LeftSSDValue + 1;
 						end
 					if(obj3Collide)
 						begin
 						ballDirX <= 1;
-						LeftSSDValue <= LeftSSDValue + 1;
 						end
+					end
+				Q_P1S:
+					begin
+					//Add to Player 1's score
+					P1Score <= P1Score + 1;
+					//Reset the ball's position and give player 2 the serve
+					ballX <= 11'd315;
+					ballY <= 10'd235;
+					ballDirX <= 1'b1;
+					ballDirY <= 1'b0;
+					ballXSpeed <= 4'd1;
+					ballYSpeed <= 4'd1;
+					ballYCenter <= 10'd240;
+					ballRightX <= 11'd325;
+					//Return to regular state machine
+					state <= Q_UP;
+					end
+				Q_P2S:
+					begin
+					//Add to Player 2's score
+					P2Score <= P2Score + 1;
+					//Reset the ball's position and give player 1 the serve
+					ballX <= 11'd315;
+					ballY <= 10'd235;
+					ballDirX <= 1'b0;
+					ballDirY <= 1'b0;
+					ballXSpeed <= 4'd1;
+					ballYSpeed <= 4'd1;
+					ballYCenter <= 10'd240;
+					ballRightX <= 11'd325;
+					//Return to regular state machine
 					state <= Q_UP;
 					end
 				default:
@@ -386,6 +435,12 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 				vgaRed <= LeftSSDColor[7:5];
 				vgaGreen <= LeftSSDColor[4:2];
 				vgaBlue <= LeftSSDColor[1:0];
+				end
+			else if(RightSSDHit)
+				begin
+				vgaRed <= RightSSDColor[7:5];
+				vgaGreen <= RightSSDColor[4:2];
+				vgaBlue <= RightSSDColor[1:0];
 				end
 			else
 				begin
