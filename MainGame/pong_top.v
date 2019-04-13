@@ -75,6 +75,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	reg [10:0] LeftSSDX;		//Object's origin X Coordinate
 	reg [9:0] LeftSSDY;			//Object's origin Y Coordinate
 	reg [9:0] LeftSSDScale;		//Object's scale factor in powers of 2
+	reg [7:0] LeftSSDColor;
 	
 	reg [3:0] P1Score;		//0 through 9
 	
@@ -83,12 +84,12 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	reg [10:0] RightSSDX;		//Object's origin X Coordinate
 	reg [9:0] RightSSDY;			//Object's origin Y Coordinate
 	reg [9:0] RightSSDScale;		//Object's scale factor in powers of 2
+	reg [7:0] RightSSDColor;
 	
 	reg [3:0] P2Score;		//0 through 9
 	
 	wire RightSSDHit;
 	
-	reg [7:0] LeftSSDColor;
 	//-----------
 	
 	
@@ -205,7 +206,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	);
 	
 	//Right SSD
-	digital_ssd LeftSSD(
+	digital_ssd RightSSD(
 		.clk(clk),
 		.reset(reset),
 		.ObjectX(RightSSDX),		//Object's origin X Coordinate
@@ -486,10 +487,10 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	wire 	[3:0]	SSD0, SSD1, SSD2, SSD3;
 	wire 	[1:0] ssdscan_clk;
 	
-	assign SSD3 = {2'b00, LeftSSDY[9:8]};
-	assign SSD2 = LeftSSDY[7:4];
-	assign SSD1 = LeftSSDY[3:0];
-	assign SSD0 = LeftSSDValue[3:0];
+	assign SSD3 = 4'b0000;
+	assign SSD2 = P1Score[3:0];
+	assign SSD1 = 4'b0000;
+	assign SSD0 = P2Score[3:0];
 	
 	// need a scan clk for the seven segment display 
 	// 191Hz (50MHz / 2^18) works well
