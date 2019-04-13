@@ -25,11 +25,16 @@ module digital_ssd (
 	input [9:0] PollX,			//Position to Poll X Coordinate
 	input [8:0] PollY,			//Position to Poll Y Coordinate
 	
-	output Hit					//If HIGH, Then Poll Falls Within Object Bounds. Otherwise, LOW
+	output Hit,					//If HIGH, Then Poll Falls Within Object Bounds. Otherwise, LOW
+	output Hit2
 	);
 	
-	reg [8:0][3:0] Matrix;
+	reg [8:0] Matrix0;
+	reg [8:0] Matrix1;
+	reg [8:0] Matrix2;
+	reg [8:0] Matrix3;
 	wire hit_out;
+	wire hit2_out;
 	
 	display_matrix matrix(
 		.clk(clk),
@@ -37,13 +42,14 @@ module digital_ssd (
 		.ObjectX(ObjectX),
 		.ObjectY(ObjectY),
 		.ObjectScale(ObjectScale),
-		.Matrix0(Matrix[0]),
-		.Matrix1(Matrix[1]),
-		.Matrix2(Matrix[2]),
-		.Matrix3(Matrix[3]),
+		.Matrix0(Matrix0),
+		.Matrix1(Matrix1),
+		.Matrix2(Matrix2),
+		.Matrix3(Matrix3),
 		.PollX(PollX),
 		.PollY(PollY),
-		.Hit(hit_out)
+		.Hit(hit_out),
+		.Hit2(hit2_out)
 	);
 	
 	//Get the ADC value from JPorts
@@ -52,84 +58,85 @@ module digital_ssd (
 		case(Value)
 			4'd0:
 				begin
-				Matrix[0] <= 9'b111111111;
-				Matrix[1] <= 9'b100000001;
-				Matrix[2] <= 9'b100000001;
-				Matrix[3] <= 9'b111111111;
+				Matrix0 <= 9'b111111111;
+				Matrix1 <= 9'b100000001;
+				Matrix2 <= 9'b100000001;
+				Matrix3 <= 9'b111111111;
 				end
 			4'd1:
 				begin
-				Matrix[0] <= 9'b000000000;
-				Matrix[1] <= 9'b000000000;
-				Matrix[2] <= 9'b000000000;
-				Matrix[3] <= 9'b111111111;
+				Matrix0 <= 9'b000000000;
+				Matrix1 <= 9'b000000000;
+				Matrix2 <= 9'b000000000;
+				Matrix3 <= 9'b111111111;
 				end
 			4'd2:
 				begin
-				Matrix[0] <= 9'b111110001;
-				Matrix[1] <= 9'b100010001;
-				Matrix[2] <= 9'b100010001;
-				Matrix[3] <= 9'b100011111;
+				Matrix0 <= 9'b111110001;
+				Matrix1 <= 9'b100010001;
+				Matrix2 <= 9'b100010001;
+				Matrix3 <= 9'b100011111;
 				end
 			4'd3:
 				begin
-				Matrix[0] <= 9'b100010001;
-				Matrix[1] <= 9'b100010001;
-				Matrix[2] <= 9'b100010001;
-				Matrix[3] <= 9'b111111111;
+				Matrix0 <= 9'b100010001;
+				Matrix1 <= 9'b100010001;
+				Matrix2 <= 9'b100010001;
+				Matrix3 <= 9'b111111111;
 				end
 			4'd4:
 				begin
-				Matrix[0] <= 9'b000011111;
-				Matrix[1] <= 9'b000010000;
-				Matrix[2] <= 9'b000010000;
-				Matrix[3] <= 9'b111111111;
+				Matrix0 <= 9'b000011111;
+				Matrix1 <= 9'b000010000;
+				Matrix2 <= 9'b000010000;
+				Matrix3 <= 9'b111111111;
 				end
 			4'd5:
 				begin
-				Matrix[0] <= 9'b100011111;
-				Matrix[1] <= 9'b100010001;
-				Matrix[2] <= 9'b100010001;
-				Matrix[3] <= 9'b111110001;
+				Matrix0 <= 9'b100011111;
+				Matrix1 <= 9'b100010001;
+				Matrix2 <= 9'b100010001;
+				Matrix3 <= 9'b111110001;
 				end
 			4'd6:
 				begin
-				Matrix[0] <= 9'b111111111;
-				Matrix[1] <= 9'b100010000;
-				Matrix[2] <= 9'b100010000;
-				Matrix[3] <= 9'b111110000;
+				Matrix0 <= 9'b111111111;
+				Matrix1 <= 9'b100010000;
+				Matrix2 <= 9'b100010000;
+				Matrix3 <= 9'b111110000;
 				end
 			4'd7:
 				begin
-				Matrix[0] <= 9'b000000001;
-				Matrix[1] <= 9'b000000001;
-				Matrix[2] <= 9'b000000001;
-				Matrix[3] <= 9'b111111111;
+				Matrix0 <= 9'b000000001;
+				Matrix1 <= 9'b000000001;
+				Matrix2 <= 9'b000000001;
+				Matrix3 <= 9'b111111111;
 				end
 			4'd8:
 				begin
-				Matrix[0] <= 9'b111111111;
-				Matrix[1] <= 9'b100010001;
-				Matrix[2] <= 9'b100010001;
-				Matrix[3] <= 9'b111111111;
+				Matrix0 <= 9'b111111111;
+				Matrix1 <= 9'b100010001;
+				Matrix2 <= 9'b100010001;
+				Matrix3 <= 9'b111111111;
 				end
 			4'd9:
 				begin
-				Matrix[0] <= 9'b000011111;
-				Matrix[1] <= 9'b000010001;
-				Matrix[2] <= 9'b000010001;
-				Matrix[3] <= 9'b111111111;
+				Matrix0 <= 9'b000011111;
+				Matrix1 <= 9'b000010001;
+				Matrix2 <= 9'b000010001;
+				Matrix3 <= 9'b111111111;
 				end
 			default:
 				begin
-				Matrix[0] <= 9'b000000011;
-				Matrix[1] <= 9'b000000001;
-				Matrix[2] <= 9'b101110001;
-				Matrix[3] <= 9'b000011111;
+				Matrix0 <= 9'b000000011;
+				Matrix1 <= 9'b000000001;
+				Matrix2 <= 9'b101110001;
+				Matrix3 <= 9'b000011111;
 				end
 		endcase
 	end
 	
 	assign Hit = hit_out;
+	assign Hit2 = hit2_out;
 
 endmodule
