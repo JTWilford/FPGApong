@@ -61,8 +61,8 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	reg [9:0] ballY;
 	reg ballDirX;
 	reg ballDirY;
-	reg [3:0] ballXSpeed;
-	reg [3:0] ballYSpeed;
+	reg [6:0] ballXSpeed;
+	reg [6:0] ballYSpeed;
 	
 	reg [9:0] ballYCenter;
 	reg [10:0] ballRightX;
@@ -90,6 +90,14 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	
 	wire RightSSDHit;
 	
+	//-----------
+	// Border
+	reg [10:0] BorderX;
+	reg [10:0] BorderW;
+	reg [8:0] BorderH;
+	reg [7:0] BorderColor;
+	
+	wire BorderHit;
 	//-----------
 	
 	
@@ -218,6 +226,18 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 		.Hit(RightSSDHit)
 	);
 	
+	//Border
+	dotted_border Border(
+		.clk(clk),
+		.reset(reset),
+		.ObjectX(BorderX),		//Object's origin X Coordinate
+		.ObjectW(BorderW),		//Repeated object's width
+		.ObjectH(BorderH),		//Repeated object's height
+		.PollX(CounterX),			//Position to Poll X Coordinate
+		.PollY(CounterY),			//Position to Poll Y Coordinate
+		.Hit(BorderHit)
+	);
+	
 	/////////////////////////////////////////////////////////////////
 	///////////////		Game Logic Starts Here		/////////////////
 	/////////////////////////////////////////////////////////////////
@@ -269,16 +289,22 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					
 					//SETUP SSDs
 					LeftSSDX <= 11'd255;
-					LeftSSDY <= 10'd100;
+					LeftSSDY <= 10'd10;
 					LeftSSDScale <= 4'd2;
 					P1Score <= 4'd0;
 					LeftSSDColor <= 8'b11111111;	//Make Left SSD white
 					
 					RightSSDX <= 11'd345;
-					RightSSDY <= 10'd100;
+					RightSSDY <= 10'd10;
 					RightSSDScale <= 4'd2;
 					P2Score <= 4'd0;
 					RightSSDColor <= 8'b11111111;	//Make Left SSD white
+					
+					//SETUP BORDER
+					BorderX <= 11'd319;
+					BorderW <= 10'd2;
+					BorderH <= 11'd10;
+					BorderColor <= 8'b11111111;		//Make Border white
 					
 					state <= Q_UP;
 					end
@@ -318,6 +344,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					obj3Color <= Sw[7:0];
 					LeftSSDColor <= Sw[7:0];
 					RightSSDColor <= Sw[7:0];
+					BorderColor <= Sw[7:0];
 					
 					state <= Q_UB;
 					end
@@ -361,10 +388,14 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					if(obj2Collide)
 						begin
 						ballDirX <= 0;
+						ballXSpeed <= ballXSpeed+1;
+						ballYSpeed <= ballYSpeed+1;
 						end
 					if(obj3Collide)
 						begin
 						ballDirX <= 1;
+						ballXSpeed <= ballXSpeed+1;
+						ballYSpeed <= ballYSpeed+1;
 						end
 					end
 				Q_P1S:
@@ -442,6 +473,12 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 				vgaRed <= RightSSDColor[7:5];
 				vgaGreen <= RightSSDColor[4:2];
 				vgaBlue <= RightSSDColor[1:0];
+				end
+			else if(BorderHit)
+				begin
+				vgaRed <= BorderColor[7:5];
+				vgaGreen <= BorderColor[4:2];
+				vgaBlue <= BorderColor[1:0];
 				end
 			else
 				begin
