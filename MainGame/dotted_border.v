@@ -26,8 +26,8 @@ module dotted_border (
 	output Hit,					//If HIGH, Then Poll Falls Within Object Bounds. Otherwise, LOW
 	output Hit2
 	);
-	wire hit_out;
-	wire hit2_out;
+	reg hit_out;
+	reg hit2_out;
 	
 	//Get the ADC value from JPorts
 	always @ (posedge clk)
