@@ -1,12 +1,12 @@
 //////////////////////////////////////////////////////////////////////////////////
 // Author:			Justin Wilford
-// Create Date:		03/17/2019 
-// File Name:		generate_pwm.v
+// Create Date:		04/17/2019 
+// File Name:		display_gandhi.v
 // Description: 
-//		Generates a PWM signal based on switch inputs.
+//		Displays a 100px by 100px monochromatic image of Professor Gandhi Puvvada.
 //
-// Revision: 		1.0
-// Additional Comments: 
+// Revision: 		1.1
+// Additional Comments:  Was originally 200px by 200px, but ISE ran out of memory while synthesizing.
 //
 //////////////////////////////////////////////////////////////////////////////////
 

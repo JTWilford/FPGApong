@@ -1,7 +1,14 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// VGA verilog template
-// Author:  Da Cheng
+// Author:			Justin Wilford
+// Create Date:		04/17/2019 
+// File Name:		display_gandhi.v
+// Description: 
+//		Displays a 100px by 100px monochromatic image of Professor Gandhi Puvvada.
+//
+// Revision: 		1.1
+// Additional Comments:  Was originally 200px by 200px, but ISE ran out of memory while synthesizing.
+//
 //////////////////////////////////////////////////////////////////////////////////
 module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU, btnD, btnC,
 	St_ce_bar, St_rp_bar, Mt_ce_bar, Mt_St_oe_bar, Mt_St_we_bar,
@@ -68,6 +75,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	reg [10:0] ballRightX;
 	
 	reg [1:0] speedMultiplier;
+	reg [1:0] hitCounter;
 	//-----------
 	// Player Hitboxes
 	wire obj2Collide;
@@ -101,14 +109,14 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	
 	wire BorderHit;
 	//-----------
-	// General Purpose Characters (16 total)
+	// General Purpose Characters (32 total)
 		//All character's colors and hit markers
 	reg [7:0] GPCharColor;
-	wire [15:0] GPCharHit;
-	reg [10:0] GPCharX [15:0];
-	reg [9:0] GPCharY [15:0];
-	reg [9:0] GPCharScale [15:0];
-	reg [5:0] GPCharLetter [15:0];
+	wire [31:0] GPCharHit;
+	reg [10:0] GPCharX [31:0];
+	reg [9:0] GPCharY [31:0];
+	reg [9:0] GPCharScale [31:0];
+	reg [5:0] GPCharLetter [31:0];
 	//-----------
 	// Gandhi image
 	reg [10:0] GandhiX;
@@ -259,10 +267,10 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 		.Hit(BorderHit)
 	);
 	
-	//Generate General Purpose Characters
+	//Generate General Purpose Characters -> Generates 32
 	genvar i;
 	generate
-		for(i=0; i<=15; i=i+1) begin: generate_general_purpose_characters
+		for(i=0; i<=31; i=i+1) begin: generate_general_purpose_characters
 			digital_ssd GPChar(
 				.clk(clk),
 				.reset(reset),
@@ -296,10 +304,13 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	reg [3:0] state;
 	reg [7:0] iter;
 	reg [10:0] xtemp;
+	reg [11:0] countdown;
 	
 	//STATES
 	localparam 	
-	Q_INIT = 4'd0, Q_SETUP_MENU = 4'd1, Q_MENU = 4'd2, Q_SETUP_GAME = 4'd3, Q_WAIT = 4'd4, Q_UP = 4'd5, Q_UB = 4'd6, Q_UBC = 4'd7, Q_CC = 4'd8, Q_P1S = 4'd9, Q_P2S = 4'd10, Q_UNK = 4'bXXXX;
+	Q_INIT = 4'd0, Q_SETUP_MENU = 4'd1, Q_MENU = 4'd2, Q_SETUP_GAME = 4'd3, Q_WAIT = 4'd4, Q_UP = 4'd5,
+	Q_UB = 4'd6, Q_UBC = 4'd7, Q_CC = 4'd8, Q_P1S = 4'd9, Q_P2S = 4'd10, Q_P1WIN = 4'd11, Q_P2WIN = 4'd12,
+	Q_UNK = 4'bXXXX;
 	//LETTERS
 	localparam
 	L_A = 6'd10, L_B = 6'd11, L_C = 6'd12, L_D = 6'd13, L_E = 6'd14, L_F = 6'd15, L_G = 6'd16, L_H = 6'd17, L_I = 6'd18, L_J = 6'd19, L_K = 6'd20, L_L = 6'd21,
@@ -461,6 +472,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					ballYCenter <= 10'd240;
 					ballRightX <= 11'd325;
 					speedMultiplier <= 2'b00;
+					hitCounter <= 2'b00;
 					
 					//SETUP SCORE DISPLAY
 					GPCharX[0] <= 11'd255;
@@ -487,11 +499,16 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					GandhiColor1 <= 8'b00000011;
 					GandhiColor2 <= 8'b00100001;
 					
+					//RESET WAIT TIMER
+					countdown <= 12'd0;
+					
 					state <= Q_WAIT;
 					end
 				Q_WAIT:
 					begin
-					state <= Q_UP;
+					countdown <= countdown + 12'd1;
+					if(countdown == 12'd1599)		//Clock runs at 800Hz in this section -> 2 second wait
+						state <= Q_UP;
 					end
 				Q_UP:		//Update Players State
 					begin
@@ -580,14 +597,22 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					if(obj2Collide)
 						begin
 						ballDirX <= 0;
-						ballXSpeed <= ballXSpeed+1;
-						ballYSpeed <= ballYSpeed+1;
+						hitCounter <= hitCounter+1;
+						if(hitCounter == 2'b11)
+							begin
+							ballXSpeed <= ballXSpeed+1;
+							ballYSpeed <= ballYSpeed+1;
+							end
 						end
 					if(obj3Collide)
 						begin
 						ballDirX <= 1;
-						ballXSpeed <= ballXSpeed+1;
-						ballYSpeed <= ballYSpeed+1;
+						hitCounter <= hitCounter+1;
+						if(hitCounter == 2'b11)
+							begin
+							ballXSpeed <= ballXSpeed+1;
+							ballYSpeed <= ballYSpeed+1;
+							end
 						end
 					end
 				Q_P1S:		//Player 1 Scored State
@@ -603,11 +628,13 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					ballYSpeed <= 4'd1;
 					ballYCenter <= 10'd240;
 					ballRightX <= 11'd325;
+					speedMultiplier <= 2'b00;
+					hitCounter <= 2'b00;
 					//Return to regular state machine
 					state <= Q_WAIT;
 					//If player 1 won, reset the game and return to title screen
 					if(P1Score == 4'd11)
-						state <= Q_INIT;
+						state <= Q_P1WIN;
 					end
 				Q_P2S:		//Player 2 Scored State
 					begin
@@ -622,10 +649,112 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					ballYSpeed <= 4'd1;
 					ballYCenter <= 10'd240;
 					ballRightX <= 11'd325;
+					speedMultiplier <= 2'b00;
+					hitCounter <= 2'b00;
 					//Return to regular state machine
 					state <= Q_WAIT;
 					//If player 2 won, reset the game and return to title screen
 					if(P2Score == 4'd11)
+						state <= Q_P2WIN;
+					end
+				Q_P1WIN:		//Player 1 Won
+					begin
+					//Set the win text
+					//PLACE GANDHI
+					GandhiX <= 11'd120;
+					GandhiY <= 10'd190;
+					GandhiColor1 <= 8'b11100000;
+					GandhiColor2 <= 8'b00100000;
+					//Set GPCharacter colors
+					GPCharColor <= 8'b11111101;
+					//Congratulate the player -> PLAYER 1 WINS
+					GPCharLetter[4] 	<= L_P;
+					GPCharLetter[5] 	<= L_L;
+					GPCharLetter[6] 	<= L_A;
+					GPCharLetter[7] 	<= L_Y;
+					GPCharLetter[8] 	<= L_E;
+					GPCharLetter[9] 	<= L_R;
+					GPCharLetter[10] 	<= L_space;
+					GPCharLetter[11] 	<= 6'd1;
+					GPCharLetter[12] 	<= L_space;
+					GPCharLetter[13] 	<= L_W;
+					GPCharLetter[14] 	<= L_I;
+					GPCharLetter[15] 	<= L_N;
+					GPCharLetter[16] 	<= L_S;
+					for(iter=4, xtemp=11'd300; iter <= 16; iter=iter+1, xtemp=xtemp+11'd15) begin: place_p1_win
+						GPCharX[iter] <= xtemp;
+						GPCharY[iter] <= 10'd220;
+						GPCharScale[iter] <= 4'd1;		//2 times bigger
+					end
+					//Congratulate the player -> GOOD JOB
+					GPCharLetter[17] 	<= L_G;
+					GPCharLetter[18] 	<= L_O;
+					GPCharLetter[19] 	<= L_O;
+					GPCharLetter[20] 	<= L_D;
+					GPCharLetter[21] 	<= L_space;
+					GPCharLetter[22] 	<= L_J;
+					GPCharLetter[23] 	<= L_O;
+					GPCharLetter[24] 	<= L_B;
+					for(iter=17, xtemp=11'd337; iter <= 24; iter=iter+1, xtemp=xtemp+11'd15) begin: place_p1_good
+						GPCharX[iter] <= xtemp;
+						GPCharY[iter] <= 10'd242;
+						GPCharScale[iter] <= 4'd1;		//2 times bigger
+					end
+					
+					countdown <= 12'd0;
+					state <= Q_END_WAIT;
+					end
+				Q_P1WIN:		//Player 2 Won
+					begin
+					//Set the win text
+					//PLACE GANDHI
+					GandhiX <= 11'd120;
+					GandhiY <= 10'd190;
+					GandhiColor1 <= 8'b11100000;
+					GandhiColor2 <= 8'b00100000;
+					//Set GPCharacter colors
+					GPCharColor <= 8'b11111101;
+					//Congratulate the player -> PLAYER 1 WINS
+					GPCharLetter[4] 	<= L_P;
+					GPCharLetter[5] 	<= L_L;
+					GPCharLetter[6] 	<= L_A;
+					GPCharLetter[7] 	<= L_Y;
+					GPCharLetter[8] 	<= L_E;
+					GPCharLetter[9] 	<= L_R;
+					GPCharLetter[10] 	<= L_space;
+					GPCharLetter[11] 	<= 6'd2;
+					GPCharLetter[12] 	<= L_space;
+					GPCharLetter[13] 	<= L_W;
+					GPCharLetter[14] 	<= L_I;
+					GPCharLetter[15] 	<= L_N;
+					GPCharLetter[16] 	<= L_S;
+					for(iter=4, xtemp=11'd300; iter <= 16; iter=iter+1, xtemp=xtemp+11'd15) begin: place_p2_win
+						GPCharX[iter] <= xtemp;
+						GPCharY[iter] <= 10'd220;
+						GPCharScale[iter] <= 4'd1;		//2 times bigger
+					end
+					//Congratulate the player -> GOOD JOB
+					GPCharLetter[17] 	<= L_G;
+					GPCharLetter[18] 	<= L_O;
+					GPCharLetter[19] 	<= L_O;
+					GPCharLetter[20] 	<= L_D;
+					GPCharLetter[21] 	<= L_space;
+					GPCharLetter[22] 	<= L_J;
+					GPCharLetter[23] 	<= L_O;
+					GPCharLetter[24] 	<= L_B;
+					for(iter=17, xtemp=11'd337; iter <= 24; iter=iter+1, xtemp=xtemp+11'd15) begin: place_p2_good
+						GPCharX[iter] <= xtemp;
+						GPCharY[iter] <= 10'd242;
+						GPCharScale[iter] <= 4'd1;		//2 times bigger
+					end
+					
+					countdown <= 12'd0;
+					state <= Q_END_WAIT;
+					end
+				Q_END_WAIT:
+					begin
+					countdown <= countdown + 12'd1;
+					if(countdown == 12'd3999)		//Clock runs at 800Hz in this section -> 5 second wait
 						state <= Q_INIT;
 					end
 				default:
@@ -643,7 +772,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 		if(inDisplayArea)
 			begin
 				//Text layer
-				if(GPCharHit != 16'b0000000000000000)
+				if(GPCharHit != 32'b00000000000000000000000000000000)
 					begin
 					vgaRed <= GPCharColor[7:5];
 					vgaGreen <= GPCharColor[4:2];
