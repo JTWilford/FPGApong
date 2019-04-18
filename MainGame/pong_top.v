@@ -57,12 +57,12 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	reg [9:0] player2Pos;
 	//-----------
 	// Registers for Ball position and motion
-	reg [12:0] ballX;
-	reg [11:0] ballY;
+	reg [10:0] ballX;
+	reg [9:0] ballY;
 	reg ballDirX;
 	reg ballDirY;
-	reg [7:0] ballXSpeed;
-	reg [7:0] ballYSpeed;
+	reg [6:0] ballXSpeed;
+	reg [6:0] ballYSpeed;
 	
 	reg [9:0] ballYCenter;
 	reg [10:0] ballRightX;
@@ -104,7 +104,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	// General Purpose Characters (16 total)
 		//All character's colors and hit markers
 	reg [7:0] GPCharColor;
-	wire [31:0] GPCharHit;
+	wire [15:0] GPCharHit;
 	reg [10:0] GPCharX [15:0];
 	reg [9:0] GPCharY [15:0];
 	reg [9:0] GPCharScale [15:0];
@@ -244,8 +244,8 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	object obj1(
 		.clk(clk),
 		.reset(reset),
-		.ObjectX(ballX[12:2]),
-		.ObjectY(ballY[11:2]),
+		.ObjectX(ballX),
+		.ObjectY(ballY),
 		.ObjectW(obj1W),
 		.ObjectH(obj1H),
 		.PollX(CounterX),
@@ -292,7 +292,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 		.ObjectY(obj3Y),
 		.ObjectW(obj3W),
 		.ObjectH(obj3H),
-		.PollX(ballX[12:2]),
+		.PollX(ballX),
 		.PollY(ballYCenter),
 		.Hit(obj3Collide)
 	);
@@ -516,8 +516,8 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					obj3Color <= 8'b11011011;		//Make Object 3 yellow
 					
 					//SETUP BALL MOTION
-					ballX <= 13'd315<<2;
-					ballY <= 12'd235<<2;
+					ballX <= 11'd315;
+					ballY <= 10'd235;
 					ballDirX <= 1'b1;
 					ballDirY <= 1'b0;
 					ballXSpeed <= 4'd2;
@@ -613,8 +613,8 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					end
 				Q_UBC:		//Update Ball Center State
 					begin
-					ballYCenter <= ballY[11:2] + 11'd5;
-					ballRightX <= ballX[12:2] + 10'd10;
+					ballYCenter <= ballY + 5;
+					ballRightX <= ballX + 10;
 					
 					state <= Q_CC;
 					end
@@ -624,11 +624,11 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					//Check if ball hit the bounds of the screen
 					if(ballX < ballXSpeed)		//Hit Player 1's goal
 						state <= Q_P2S;
-					if(ballX[12:0] >= 11'd630)		//Hit Player 2's goal
+					if(ballX >= 11'd630)		//Hit Player 2's goal
 						state <= Q_P1S;
-					if(ballY[11:0] < ballYSpeed)		//Hit top of screen
+					if(ballY < ballYSpeed)		//Hit top of screen
 						ballDirY <= 1;
-					if(ballY[11:0] >= 10'd470)		//Hit bottom of screen
+					if(ballY >= 10'd470)		//Hit bottom of screen
 						ballDirY <= 0;
 						
 					//Check if ball hit a player paddle
@@ -650,8 +650,8 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					//Add to Player 1's score
 					P1Score <= P1Score + 1;
 					//Reset the ball's position and give player 2 the serve
-					ballX <= 13'd315<<2;
-					ballY <= 12'd235<<2;
+					ballX <= 11'd315;
+					ballY <= 10'd235;
 					ballDirX <= 1'b1;
 					ballDirY <= 1'b0;
 					ballXSpeed <= 4'd1;
@@ -669,12 +669,12 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					//Add to Player 2's score
 					P2Score <= P2Score + 1;
 					//Reset the ball's position and give player 1 the serve
-					ballX <= 13'd315<<2;
-					ballY <= 12'd235<<2;
+					ballX <= 11'd315;
+					ballY <= 10'd235;
 					ballDirX <= 1'b0;
 					ballDirY <= 1'b0;
-					ballXSpeed <= 4'd2;
-					ballYSpeed <= 4'd2;
+					ballXSpeed <= 4'd1;
+					ballYSpeed <= 4'd1;
 					ballYCenter <= 10'd240;
 					ballRightX <= 11'd325;
 					//Return to regular state machine
@@ -702,6 +702,13 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 				end
 			else
 				begin
+					//Text layer
+					if(GPCharHit ~= 16'b0000000000000000)
+						begin
+						vgaRed <= GPCharColor[7:5];
+						vgaGreen <= GPCharColor[4:2];
+						vgaBlue <= GPCharColor[1:0];
+						end
 					if(obj1Hit)		//Ball always drawn over anything else
 						begin
 						vgaRed <= obj1Color[7:5];
