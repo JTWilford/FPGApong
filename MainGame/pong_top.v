@@ -109,104 +109,6 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	reg [9:0] GPCharY [15:0];
 	reg [9:0] GPCharScale [15:0];
 	reg [5:0] GPCharLetter [15:0];
-	/*
-		//Char0
-	reg [10:0] char0X;		//Object's origin X Coordinate
-	reg [9:0] char0Y;			//Object's origin Y Coordinate
-	reg [9:0] char0Scale;		//Object's scale factor in powers of 2
-	
-	reg [5:0] char0Letter;		//0 through 35
-		//Char1
-	reg [10:0] char1X;		//Object's origin X Coordinate
-	reg [9:0] char1Y;			//Object's origin Y Coordinate
-	reg [9:0] char1Scale;		//Object's scale factor in powers of 2
-	
-	reg [5:0] char1Letter;		//0 through 35
-		//Char2
-	reg [10:0] char2X;		//Object's origin X Coordinate
-	reg [9:0] char2Y;			//Object's origin Y Coordinate
-	reg [9:0] char2Scale;		//Object's scale factor in powers of 2
-	
-	reg [5:0] char2Letter;		//0 through 35
-		//Char0
-	reg [10:0] char3X;		//Object's origin X Coordinate
-	reg [9:0] char3Y;			//Object's origin Y Coordinate
-	reg [9:0] char3Scale;		//Object's scale factor in powers of 2
-	
-	reg [5:0] char3Letter;		//0 through 35
-		//Char4
-	reg [10:0] char4X;		//Object's origin X Coordinate
-	reg [9:0] char4Y;			//Object's origin Y Coordinate
-	reg [9:0] char4Scale;		//Object's scale factor in powers of 2
-	
-	reg [5:0] char4Letter;		//0 through 35
-		//Char5
-	reg [10:0] char5X;		//Object's origin X Coordinate
-	reg [9:0] char5Y;			//Object's origin Y Coordinate
-	reg [9:0] char5Scale;		//Object's scale factor in powers of 2
-	
-	reg [5:0] char5Letter;		//0 through 35
-		//Char4
-	reg [10:0] char6X;		//Object's origin X Coordinate
-	reg [9:0] char6Y;			//Object's origin Y Coordinate
-	reg [9:0] char6Scale;		//Object's scale factor in powers of 2
-	
-	reg [5:0] char6Letter;		//0 through 35
-		//Char7
-	reg [10:0] char7X;		//Object's origin X Coordinate
-	reg [9:0] char7Y;			//Object's origin Y Coordinate
-	reg [9:0] char7Scale;		//Object's scale factor in powers of 2
-	
-	reg [5:0] char7Letter;		//0 through 35
-		//Char8
-	reg [10:0] char8X;		//Object's origin X Coordinate
-	reg [9:0] char8Y;			//Object's origin Y Coordinate
-	reg [9:0] char8Scale;		//Object's scale factor in powers of 2
-	
-	reg [5:0] char8Letter;		//0 through 35
-		//Char9
-	reg [10:0] char9X;		//Object's origin X Coordinate
-	reg [9:0] char9Y;			//Object's origin Y Coordinate
-	reg [9:0] char9Scale;		//Object's scale factor in powers of 2
-	
-	reg [5:0] char9Letter;		//0 through 35
-		//Char10
-	reg [10:0] char10X;		//Object's origin X Coordinate
-	reg [9:0] char10Y;			//Object's origin Y Coordinate
-	reg [9:0] char10Scale;		//Object's scale factor in powers of 2
-	
-	reg [5:0] char10Letter;		//0 through 35
-		//Char11
-	reg [10:0] char11X;		//Object's origin X Coordinate
-	reg [9:0] char11Y;			//Object's origin Y Coordinate
-	reg [9:0] char11Scale;		//Object's scale factor in powers of 2
-	
-	reg [5:0] char11Letter;		//0 through 35
-		//Char12
-	reg [10:0] char12X;		//Object's origin X Coordinate
-	reg [9:0] char12Y;			//Object's origin Y Coordinate
-	reg [9:0] char12Scale;		//Object's scale factor in powers of 2
-	
-	reg [5:0] char12Letter;		//0 through 35
-		//Char13
-	reg [10:0] char13X;		//Object's origin X Coordinate
-	reg [9:0] char13Y;			//Object's origin Y Coordinate
-	reg [9:0] char13Scale;		//Object's scale factor in powers of 2
-	
-	reg [5:0] char13Letter;		//0 through 35
-		//Char14
-	reg [10:0] char14X;		//Object's origin X Coordinate
-	reg [9:0] char14Y;			//Object's origin Y Coordinate
-	reg [9:0] char14Scale;		//Object's scale factor in powers of 2
-	
-	reg [5:0] char14Letter;		//0 through 35
-		//Char15
-	reg [10:0] char15X;		//Object's origin X Coordinate
-	reg [9:0] char15Y;			//Object's origin Y Coordinate
-	reg [9:0] char15Scale;		//Object's scale factor in powers of 2
-	
-	reg [5:0] char15Letter;		//0 through 35
-	*/
 	//-----------
 	
 	
@@ -374,6 +276,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	
 	reg [3:0] state;
 	reg [7:0] iter;
+	reg [10:0] xtemp;
 	
 	//STATES
 	localparam 	
@@ -428,7 +331,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					
 					//SETUP GENERAL PURPOSE CHARACTERS
 					GPCharColor <= 8'b11111111;		//Make general purpose characters white
-					for(iter=1; iter<=15; iter=i+1) begin: setup_GPCharacters
+					for(iter=0; iter<=15; iter=iter+1) begin: setup_GPCharacters
 						GPCharX[iter] <= 11'd641;		//Put GP Characters off screen
 						GPCharY[iter] <= 10'd481;
 						GPCharScale[iter] <= 4'd0;
@@ -439,6 +342,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 				Q_SETUP_MENU:
 					begin
 					//Create PONG Title Screen
+					GPCharColor <= 8'b11111111;
 					GPCharLetter[0] <= L_P;
 					GPCharX[0] <= 11'd96;
 					GPCharY[0] <= 10'd60;
@@ -471,11 +375,27 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					GPCharLetter[12] <= L_A;
 					GPCharLetter[13] <= L_R;
 					GPCharLetter[14] <= L_T;
-					for(iter=4; iter <= 14; iter=iter+1) begin: create_prompt
-						GPCharX[iter] <= 11'd96 + ((i-4)*15);
+					for(iter=4, xtemp=11'd96; iter <= 14; iter=iter+1, xtemp=xtemp+11'd15) begin: create_prompt
+						GPCharX[iter] <= xtemp;
 						GPCharY[iter] <= 10'd300;
 						GPCharScale[iter] <= 4'd1;		//2 times bigger
 					end
+					
+					GPCharX[4] <= 11'd96;
+					GPCharY[4] <= 10'd300;
+					GPCharScale[4] <= 4'd1;
+					GPCharX[5] <= 11'd111;
+					GPCharY[5] <= 10'd300;
+					GPCharScale[5] <= 4'd1;
+					GPCharX[6] <= 11'd126;
+					GPCharY[6] <= 10'd300;
+					GPCharScale[6] <= 4'd1;
+					GPCharX[7] <= 11'd141;
+					GPCharY[7] <= 10'd300;
+					GPCharScale[7] <= 4'd1;
+					GPCharX[8] <= 11'd156;
+					GPCharY[8] <= 10'd300;
+					GPCharScale[8] <= 4'd1;
 					
 					state <= Q_MENU;		//Go to Menu state
 					end
@@ -483,6 +403,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					begin
 					if(start_btn)		//Wait until start button is pressed to start the game
 						state <= Q_SETUP_GAME;
+					GPCharColor <= Sw[7:0];
 					end
 				Q_SETUP_GAME:
 					begin
@@ -490,7 +411,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					
 					//SETUP GENERAL PURPOSE CHARACTERS
 					GPCharColor <= 8'b11111111;		//Make general purpose characters white
-					for(iter=0; iter<=15; iter=i+1) begin: setup_GPCharacters_game
+					for(iter=0; iter<=15; iter=iter+1) begin: setup_GPCharacters_game
 						GPCharX[iter] <= 11'd641;		//Put GP Characters off screen
 						GPCharY[iter] <= 10'd481;
 						GPCharScale[iter] <= 4'd0;
@@ -697,60 +618,54 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	begin
 		if(inDisplayArea)
 			begin
-			if(state == Q_MENU)
-				begin
-				end
-			else
-				begin
-					//Text layer
-					if(GPCharHit ~= 16'b0000000000000000)
-						begin
-						vgaRed <= GPCharColor[7:5];
-						vgaGreen <= GPCharColor[4:2];
-						vgaBlue <= GPCharColor[1:0];
-						end
-					if(obj1Hit)		//Ball always drawn over anything else
-						begin
-						vgaRed <= obj1Color[7:5];
-						vgaGreen <= obj1Color[4:2];
-						vgaBlue <= obj1Color[1:0];
-						end
-					else if(obj2Hit)
-						begin
-						vgaRed <= obj2Color[7:5];
-						vgaGreen <= obj2Color[4:2];
-						vgaBlue <= obj2Color[1:0];
-						end
-					else if(obj3Hit)
-						begin
-						vgaRed <= obj3Color[7:5];
-						vgaGreen <= obj3Color[4:2];
-						vgaBlue <= obj3Color[1:0];
-						end
-					else if(LeftSSDHit)
-						begin
-						vgaRed <= LeftSSDColor[7:5];
-						vgaGreen <= LeftSSDColor[4:2];
-						vgaBlue <= LeftSSDColor[1:0];
-						end
-					else if(RightSSDHit)
-						begin
-						vgaRed <= RightSSDColor[7:5];
-						vgaGreen <= RightSSDColor[4:2];
-						vgaBlue <= RightSSDColor[1:0];
-						end
-					else if(BorderHit)		//Background border always drawn under everything else
-						begin
-						vgaRed <= BorderColor[7:5];
-						vgaGreen <= BorderColor[4:2];
-						vgaBlue <= BorderColor[1:0];
-						end
-					else
-						begin
-						vgaRed <= 3'b000;
-						vgaGreen <= 3'b000;
-						vgaBlue <= 3'b000;
-						end
+				//Text layer
+				if(GPCharHit != 16'b0000000000000000)
+					begin
+					vgaRed <= GPCharColor[7:5];
+					vgaGreen <= GPCharColor[4:2];
+					vgaBlue <= GPCharColor[1:0];
+					end
+				else if(obj1Hit)		//Ball always drawn over anything else
+					begin
+					vgaRed <= obj1Color[7:5];
+					vgaGreen <= obj1Color[4:2];
+					vgaBlue <= obj1Color[1:0];
+					end
+				else if(obj2Hit)
+					begin
+					vgaRed <= obj2Color[7:5];
+					vgaGreen <= obj2Color[4:2];
+					vgaBlue <= obj2Color[1:0];
+					end
+				else if(obj3Hit)
+					begin
+					vgaRed <= obj3Color[7:5];
+					vgaGreen <= obj3Color[4:2];
+					vgaBlue <= obj3Color[1:0];
+					end
+				else if(LeftSSDHit)
+					begin
+					vgaRed <= LeftSSDColor[7:5];
+					vgaGreen <= LeftSSDColor[4:2];
+					vgaBlue <= LeftSSDColor[1:0];
+					end
+				else if(RightSSDHit)
+					begin
+					vgaRed <= RightSSDColor[7:5];
+					vgaGreen <= RightSSDColor[4:2];
+					vgaBlue <= RightSSDColor[1:0];
+					end
+				else if(BorderHit)		//Background border always drawn under everything else
+					begin
+					vgaRed <= BorderColor[7:5];
+					vgaGreen <= BorderColor[4:2];
+					vgaBlue <= BorderColor[1:0];
+					end
+				else
+					begin
+					vgaRed <= 3'b000;
+					vgaGreen <= 3'b000;
+					vgaBlue <= 3'b000;
 					end
 				end
 		else
@@ -770,14 +685,14 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	/////////////////////////////////////////////////////////////////
 	wire LD0, LD1, LD2, LD3, LD4, LD5, LD6, LD7;
 	
-	assign LD0 = player1Pos[0];
-	assign LD1 = player1Pos[1];
-	assign LD2 = player1Pos[2];
-	assign LD3 = player1Pos[3];
-	assign LD4 = player1Pos[4];
-	assign LD5 = player1Pos[5];
-	assign LD6 = player1Pos[6];
-	assign LD7 = player1Pos[7];
+	assign LD0 = GPCharHit[0];
+	assign LD1 = GPCharHit[1];
+	assign LD2 = GPCharHit[2];
+	assign LD3 = GPCharHit[3];
+	assign LD4 = GPCharHit[4];
+	assign LD5 = GPCharHit[5];
+	assign LD6 = GPCharHit[6];
+	assign LD7 = GPCharHit[7];
 	
 	/////////////////////////////////////////////////////////////////
 	//////////////  	  LD control ends here 	 	////////////////////

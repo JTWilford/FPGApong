@@ -20,7 +20,7 @@ module digital_ssd (
 	input [9:0] ObjectY,		//Object's origin Y Coordinate
 	input [3:0] ObjectScale,		//Object's scale factor in powers of 2
 	
-	input [3:0] Value,		//64 possible characters. We use 37.
+	input [5:0] Value,		//64 possible characters. We use 37.
 							//Numbers are 0-9, Letters are 10-35. ? is anything else
 	
 	input [9:0] PollX,			//Position to Poll X Coordinate
