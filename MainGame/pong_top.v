@@ -57,12 +57,12 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	reg [9:0] player2Pos;
 	//-----------
 	// Registers for Ball position and motion
-	reg [10:0] ballX;
-	reg [9:0] ballY;
+	reg [12:0] ballX;
+	reg [11:0] ballY;
 	reg ballDirX;
 	reg ballDirY;
-	reg [6:0] ballXSpeed;
-	reg [6:0] ballYSpeed;
+	reg [7:0] ballXSpeed;
+	reg [7:0] ballYSpeed;
 	
 	reg [9:0] ballYCenter;
 	reg [10:0] ballRightX;
@@ -132,8 +132,8 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	object obj1(
 		.clk(clk),
 		.reset(reset),
-		.ObjectX(ballX),
-		.ObjectY(ballY),
+		.ObjectX(ballX[12:2]),
+		.ObjectY(ballY[11:2]),
 		.ObjectW(obj1W),
 		.ObjectH(obj1H),
 		.PollX(CounterX),
@@ -423,8 +423,8 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					ballY <= 10'd235;
 					ballDirX <= 1'b0;
 					ballDirY <= 1'b0;
-					ballXSpeed <= 4'd1;
-					ballYSpeed <= 4'd1;
+					ballXSpeed <= 4'd2;
+					ballYSpeed <= 4'd2;
 					ballYCenter <= 10'd240;
 					ballRightX <= 11'd325;
 					//Return to regular state machine
