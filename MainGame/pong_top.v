@@ -399,11 +399,11 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					GPCharY[3] <= 10'd60;
 					GPCharScale[3] <= 4'd4;		//16 times bigger
 					
-					//PLACE GANDHI
+					/*//PLACE GANDHI
 					GandhiX <= 11'd220;
 					GandhiY <= 10'd200;
 					GandhiColor1 <= 8'b00000011;
-					GandhiColor2 <= 8'b00100001;
+					GandhiColor2 <= 8'b00100001;*/
 					
 					//Create prompt to start game -> PRESS START
 					GPCharLetter[4] <= L_P;
