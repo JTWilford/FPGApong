@@ -373,13 +373,14 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	/////////////////////////////////////////////////////////////////
 	
 	reg [3:0] state;
+	reg [7:0] iter;
 	
 	//STATES
 	localparam 	
 	Q_INIT = 4'd0, Q_SETUP_MENU = 4'd1, Q_MENU = 4'd2, Q_SETUP_GAME = 4'd3, Q_WAIT = 4'd4, Q_UP = 4'd5, Q_UB = 4'd6, Q_UBC = 4'd7, Q_CC = 4'd8, Q_P1S = 4'd9, Q_P2S = 4'd10, Q_UNK = 4'bXXXX;
 	//LETTERS
 	localparam
-	L_A = 6'd10, L_B = 6'd11, L_C = 6'd12, L_D = 6'd13, L_E = 6'd14, L_F = 0'd15, L_G = 6'd16, L_H = 6'd17, L_I = 6'd18, L_J = 6'd19, L_K = 6'd20, L_L = 6'd21,
+	L_A = 6'd10, L_B = 6'd11, L_C = 6'd12, L_D = 6'd13, L_E = 6'd14, L_F = 6'd15, L_G = 6'd16, L_H = 6'd17, L_I = 6'd18, L_J = 6'd19, L_K = 6'd20, L_L = 6'd21,
 	L_M = 6'd22, L_N = 6'd23, L_O = 6'd24, L_P = 6'd25, L_Q = 6'd26, L_R = 6'd27, L_S = 6'd28, L_T = 6'd29, L_U = 6'd30, L_V = 6'd31, L_W = 6'd32, L_X = 6'd33,
 	L_Y = 6'd34, L_Z = 6'd35, L_space = 6'd36;
 	//Update the position of the paddle based off of potentiometer
@@ -427,10 +428,10 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					
 					//SETUP GENERAL PURPOSE CHARACTERS
 					GPCharColor <= 8'b11111111;		//Make general purpose characters white
-					for(i=1; i<=15; i=i+1) begin: setup_GPCharacters
-						GPCharX[i] <= 11'd641;		//Put GP Characters off screen
-						GPCharY[i] <= 10'd481;
-						GPCharScale[i] <= 4'd0;
+					for(iter=1; iter<=15; iter=i+1) begin: setup_GPCharacters
+						GPCharX[iter] <= 11'd641;		//Put GP Characters off screen
+						GPCharY[iter] <= 10'd481;
+						GPCharScale[iter] <= 4'd0;
 					end
 					
 					state <= Q_SETUP_MENU;
@@ -470,10 +471,10 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					GPCharLetter[12] <= L_A;
 					GPCharLetter[13] <= L_R;
 					GPCharLetter[14] <= L_T;
-					for(i=4; i <= 14; i=i+1) begin: create_prompt
-						GPCharX[i] <= 11'd96 + ((i-4)*15);
-						GPCharY[i] <= 10'd300;
-						GPCharScale[i] <= 4'd1;		//2 times bigger
+					for(iter=4; iter <= 14; iter=iter+1) begin: create_prompt
+						GPCharX[iter] <= 11'd96 + ((i-4)*15);
+						GPCharY[iter] <= 10'd300;
+						GPCharScale[iter] <= 4'd1;		//2 times bigger
 					end
 					
 					state <= Q_MENU;		//Go to Menu state
@@ -489,10 +490,10 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					
 					//SETUP GENERAL PURPOSE CHARACTERS
 					GPCharColor <= 8'b11111111;		//Make general purpose characters white
-					for(i=0; i<=15; i=i+1) begin: setup_GPCharacters
-						GPCharX[i] <= 11'd641;		//Put GP Characters off screen
-						GPCharY[i] <= 10'd481;
-						GPCharScale[i] <= 4'd0;
+					for(iter=0; iter<=15; iter=i+1) begin: setup_GPCharacters_game
+						GPCharX[iter] <= 11'd641;		//Put GP Characters off screen
+						GPCharY[iter] <= 10'd481;
+						GPCharScale[iter] <= 4'd0;
 					end
 					
 					//SETUP BALL OBJECT
