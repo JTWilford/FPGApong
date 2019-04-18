@@ -110,6 +110,13 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	reg [9:0] GPCharScale [15:0];
 	reg [5:0] GPCharLetter [15:0];
 	//-----------
+	// Gandhi image
+	reg [10:0] GandhiX;
+	reg [9:0] GandhiY;
+	reg [7:0] GandhiColor1;
+	reg [7:0] GandhiColor2;
+	wire GandhiHit;
+	//-----------
 	
 	
 	
@@ -270,6 +277,18 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 		end
 	endgenerate
 	
+	//Gandhi Image
+	display_gandhi Gandhi(
+		.clk(clk),
+		.reset(reset),
+		.ObjectX(GandhiX),
+		.ObjectY(GandhiY),
+		.PollX(CounterX),
+		.PollY(CounterY),
+		.Hit(GandhiHit),
+		.Hit2(GandhiHit2)
+	);
+	
 	/////////////////////////////////////////////////////////////////
 	///////////////		Game Logic Starts Here		/////////////////
 	/////////////////////////////////////////////////////////////////
@@ -337,6 +356,12 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 						GPCharScale[iter] <= 4'd0;
 					end
 					
+					//SETUP GANDHI
+					GandhiX <= 11'd641;
+					GandhiY <= 10'd481;
+					GandhiColor1 <= 8'b00000011;
+					GandhiColor2 <= 8'b00100001;
+					
 					state <= Q_SETUP_MENU;
 					end
 				Q_SETUP_MENU:
@@ -362,6 +387,12 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					GPCharX[3] <= 11'd480;
 					GPCharY[3] <= 10'd60;
 					GPCharScale[3] <= 4'd4;		//16 times bigger
+					
+					//PLACE GANDHI
+					GandhiX <= 11'd220;
+					GandhiY <= 10'd200;
+					GandhiColor1 <= 8'b00000011;
+					GandhiColor2 <= 8'b00100001;
 					
 					//Create prompt to start game -> PRESS START
 					GPCharLetter[4] <= L_P;
@@ -450,6 +481,11 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					BorderH <= 11'd10;
 					BorderColor <= 8'b11111111;		//Make Border white
 					
+					//REMOVE GANDHI
+					GandhiX <= 11'd641;
+					GandhiY <= 10'd481;
+					GandhiColor1 <= 8'b00000011;
+					GandhiColor2 <= 8'b00100001;
 					
 					state <= Q_WAIT;
 					end
@@ -642,6 +678,18 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					vgaRed <= RightSSDColor[7:5];
 					vgaGreen <= RightSSDColor[4:2];
 					vgaBlue <= RightSSDColor[1:0];
+					end
+				else if(GandhiHit)
+					begin
+					vgaRed <= GandhiColor1[7:5];
+					vgaGreen <= GandhiColor1[4:2];
+					vgaBlue <= GandhiColor1[1:0];
+					end
+				else if(GandhiHit2)
+					begin
+					vgaRed <= GandhiColor2[7:5];
+					vgaGreen <= GandhiColor2[4:2];
+					vgaBlue <= GandhiColor2[1:0];
 					end
 				else if(BorderHit)		//Background border always drawn under everything else
 					begin
