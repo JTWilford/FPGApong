@@ -310,7 +310,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	localparam 	
 	Q_INIT = 4'd0, Q_SETUP_MENU = 4'd1, Q_MENU = 4'd2, Q_SETUP_GAME = 4'd3, Q_WAIT = 4'd4, Q_UP = 4'd5,
 	Q_UB = 4'd6, Q_UBC = 4'd7, Q_CC = 4'd8, Q_P1S = 4'd9, Q_P2S = 4'd10, Q_P1WIN = 4'd11, Q_P2WIN = 4'd12,
-	Q_UNK = 4'bXXXX;
+	Q_END_WAIT = 4'd13, Q_UNK = 4'bXXXX;
 	//LETTERS
 	localparam
 	L_A = 6'd10, L_B = 6'd11, L_C = 6'd12, L_D = 6'd13, L_E = 6'd14, L_F = 6'd15, L_G = 6'd16, L_H = 6'd17, L_I = 6'd18, L_J = 6'd19, L_K = 6'd20, L_L = 6'd21,
