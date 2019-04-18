@@ -381,22 +381,6 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 						GPCharScale[iter] <= 4'd1;		//2 times bigger
 					end
 					
-					GPCharX[4] <= 11'd96;
-					GPCharY[4] <= 10'd300;
-					GPCharScale[4] <= 4'd1;
-					GPCharX[5] <= 11'd111;
-					GPCharY[5] <= 10'd300;
-					GPCharScale[5] <= 4'd1;
-					GPCharX[6] <= 11'd126;
-					GPCharY[6] <= 10'd300;
-					GPCharScale[6] <= 4'd1;
-					GPCharX[7] <= 11'd141;
-					GPCharY[7] <= 10'd300;
-					GPCharScale[7] <= 4'd1;
-					GPCharX[8] <= 11'd156;
-					GPCharY[8] <= 10'd300;
-					GPCharScale[8] <= 4'd1;
-					
 					state <= Q_MENU;		//Go to Menu state
 					end
 				Q_MENU:
@@ -510,6 +494,10 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					LeftSSDColor <= Sw[7:0];
 					RightSSDColor <= Sw[7:0];
 					BorderColor <= Sw[7:0];
+					GPCharColor <= Sw[7:0];
+					
+					GPCharLetter[0] <= P1Score;
+					GPCharLetter[2] <= P2Score;
 					
 					state <= Q_UP;
 					speedMultiplier <= speedMultiplier + 1;
