@@ -66,6 +66,8 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	
 	reg [9:0] ballYCenter;
 	reg [10:0] ballRightX;
+	
+	reg [1:0] speedMultiplier;
 	//-----------
 	// Player Hitboxes
 	wire obj2Collide;
@@ -282,10 +284,11 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					ballY <= 10'd235;
 					ballDirX <= 1'b1;
 					ballDirY <= 1'b0;
-					ballXSpeed <= 4'd1;
-					ballYSpeed <= 4'd1;
+					ballXSpeed <= 4'd2;
+					ballYSpeed <= 4'd2;
 					ballYCenter <= 10'd240;
 					ballRightX <= 11'd325;
+					speedMultiplier <= 2'b00;
 					
 					//SETUP SSDs
 					LeftSSDX <= 11'd255;
@@ -346,7 +349,10 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					RightSSDColor <= Sw[7:0];
 					BorderColor <= Sw[7:0];
 					
-					state <= Q_UB;
+					state <= Q_UP;
+					speedMultiplier <= speedMultiplier + 1;
+					if(speedMultiplier == 2'b00)
+						state <= Q_UB;
 					end
 				Q_UB:
 					begin
