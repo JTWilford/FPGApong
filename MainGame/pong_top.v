@@ -180,7 +180,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 		.ObjectY(obj3Y),
 		.ObjectW(obj3W),
 		.ObjectH(obj3H),
-		.PollX(ballX),
+		.PollX(ballX[12:2]),
 		.PollY(ballYCenter),
 		.Hit(obj3Collide)
 	);
@@ -278,8 +278,8 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					obj3Color <= 8'b11011011;		//Make Object 3 yellow
 					
 					//SETUP BALL MOTION
-					ballX <= 11'd315;
-					ballY <= 10'd235;
+					ballX <= 13'd315<<2;
+					ballY <= 12'd235<<2;
 					ballDirX <= 1'b1;
 					ballDirY <= 1'b0;
 					ballXSpeed <= 4'd1;
@@ -366,8 +366,8 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					end
 				Q_UBC:
 					begin
-					ballYCenter <= ballY + 5;
-					ballRightX <= ballX + 10;
+					ballYCenter <= ballY[11:2] + 11'd5;
+					ballRightX <= ballX[12:2] + 10'd10;
 					
 					state <= Q_CC;
 					end
@@ -377,11 +377,11 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					//Check if ball hit the bounds of the screen
 					if(ballX < ballXSpeed)		//Hit Player 1's goal
 						state <= Q_P2S;
-					if(ballX >= 11'd630)		//Hit Player 2's goal
+					if(ballX[12:0] >= 11'd630)		//Hit Player 2's goal
 						state <= Q_P1S;
-					if(ballY < ballYSpeed)		//Hit top of screen
+					if(ballY[11:0] < ballYSpeed)		//Hit top of screen
 						ballDirY <= 1;
-					if(ballY >= 10'd470)		//Hit bottom of screen
+					if(ballY[11:0] >= 10'd470)		//Hit bottom of screen
 						ballDirY <= 0;
 						
 					//Check if ball hit a player paddle
@@ -403,8 +403,8 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					//Add to Player 1's score
 					P1Score <= P1Score + 1;
 					//Reset the ball's position and give player 2 the serve
-					ballX <= 11'd315;
-					ballY <= 10'd235;
+					ballX <= 13'd315<<2;
+					ballY <= 12'd235<<2;
 					ballDirX <= 1'b1;
 					ballDirY <= 1'b0;
 					ballXSpeed <= 4'd1;
@@ -419,8 +419,8 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					//Add to Player 2's score
 					P2Score <= P2Score + 1;
 					//Reset the ball's position and give player 1 the serve
-					ballX <= 11'd315;
-					ballY <= 10'd235;
+					ballX <= 13'd315<<2;
+					ballY <= 12'd235<<2;
 					ballDirX <= 1'b0;
 					ballDirY <= 1'b0;
 					ballXSpeed <= 4'd2;
