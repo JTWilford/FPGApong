@@ -123,7 +123,8 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	reg [9:0] GandhiY;
 	reg [7:0] GandhiColor1;
 	reg [7:0] GandhiColor2;
-	wire GandhiHit;
+	reg [7:0] GandhiColor3;
+	wire[1:0] GandhiHit;
 	//-----------
 	
 	
@@ -293,8 +294,8 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 		.ObjectY(GandhiY),
 		.PollX(CounterX),
 		.PollY(CounterY),
-		.Hit(GandhiHit),
-		.Hit2(GandhiHit2)
+		.Hit(GandhiHit[0]),
+		.Hit2(GandhiHit[1])
 	);
 	
 	/////////////////////////////////////////////////////////////////
@@ -305,6 +306,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	reg [7:0] iter;
 	reg [10:0] xtemp;
 	reg [11:0] countdown;
+	reg waitOn;
 	
 	//STATES
 	localparam 	
@@ -361,7 +363,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					
 					//SETUP GENERAL PURPOSE CHARACTERS
 					GPCharColor <= 8'b11111111;		//Make general purpose characters white
-					for(iter=0; iter<=15; iter=iter+1) begin: setup_GPCharacters
+					for(iter=0; iter<=31; iter=iter+1) begin: setup_GPCharacters
 						GPCharX[iter] <= 11'd641;		//Put GP Characters off screen
 						GPCharY[iter] <= 10'd481;
 						GPCharScale[iter] <= 4'd0;
@@ -370,8 +372,11 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					//SETUP GANDHI
 					GandhiX <= 11'd641;
 					GandhiY <= 10'd481;
-					GandhiColor1 <= 8'b00000011;
-					GandhiColor2 <= 8'b00100001;
+					GandhiColor1 <= 8'b01000000;
+					GandhiColor2 <= 8'b10000000;
+					GandhiColor3 <= 8'b11100000;
+					
+					waitOn <= 1'b1;
 					
 					state <= Q_SETUP_MENU;
 					end
@@ -437,7 +442,7 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					
 					//SETUP GENERAL PURPOSE CHARACTERS
 					GPCharColor <= 8'b11111111;		//Make general purpose characters white
-					for(iter=0; iter<=15; iter=iter+1) begin: setup_GPCharacters_game
+					for(iter=0; iter<=31; iter=iter+1) begin: setup_GPCharacters_game
 						GPCharX[iter] <= 11'd641;		//Put GP Characters off screen
 						GPCharY[iter] <= 10'd481;
 						GPCharScale[iter] <= 4'd0;
@@ -496,19 +501,26 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					//REMOVE GANDHI
 					GandhiX <= 11'd641;
 					GandhiY <= 10'd481;
-					GandhiColor1 <= 8'b00000011;
-					GandhiColor2 <= 8'b00100001;
+					
+					GandhiColor1 <= 8'b01000000;
+					GandhiColor2 <= 8'b10000000;
+					GandhiColor3 <= 8'b11100000;
 					
 					//RESET WAIT TIMER
-					countdown <= 12'd0;
+					countdown <= 12'd400;
+					waitOn <= 1'b1;
 					
 					state <= Q_WAIT;
 					end
 				Q_WAIT:
 					begin
-					countdown <= countdown + 12'd1;
-					if(countdown == 12'd1599)		//Clock runs at 800Hz in this section -> 2 second wait
-						state <= Q_UP;
+					if(waitOn)
+						begin
+							countdown <= countdown - 1;
+							if(countdown == 0)
+								waitOn <= 1'b0;
+						end
+					state <= Q_UP;
 					end
 				Q_UP:		//Update Players State
 					begin
@@ -556,6 +568,8 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					speedMultiplier <= speedMultiplier + 1;
 					if(speedMultiplier == 2'b00)
 						state <= Q_UB;
+					if(waitOn)
+						state <= Q_WAIT;
 					end
 				Q_UB:		//Update Ball State
 					begin
@@ -631,6 +645,8 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					speedMultiplier <= 2'b00;
 					hitCounter <= 2'b00;
 					//Return to regular state machine
+					countdown <= 12'd400;
+					waitOn <= 1'b1;
 					state <= Q_WAIT;
 					//If player 1 won, reset the game and return to title screen
 					if(P1Score == 4'd11)
@@ -652,6 +668,8 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					speedMultiplier <= 2'b00;
 					hitCounter <= 2'b00;
 					//Return to regular state machine
+					countdown <= 12'd400;
+					waitOn <= 1'b1;
 					state <= Q_WAIT;
 					//If player 2 won, reset the game and return to title screen
 					if(P2Score == 4'd11)
@@ -663,8 +681,10 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					//PLACE GANDHI
 					GandhiX <= 11'd120;
 					GandhiY <= 10'd190;
-					GandhiColor1 <= 8'b11100000;
-					GandhiColor2 <= 8'b00100000;
+					
+					GandhiColor1 <= 8'b01000000;
+					GandhiColor2 <= 8'b10000000;
+					GandhiColor3 <= 8'b11100000;
 					//Set GPCharacter colors
 					GPCharColor <= 8'b11111101;
 					//Congratulate the player -> PLAYER 1 WINS
@@ -710,8 +730,9 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					//PLACE GANDHI
 					GandhiX <= 11'd120;
 					GandhiY <= 10'd190;
-					GandhiColor1 <= 8'b11100000;
-					GandhiColor2 <= 8'b00100000;
+					GandhiColor1 <= 8'b01000000;
+					GandhiColor2 <= 8'b10000000;
+					GandhiColor3 <= 8'b11100000;
 					//Set GPCharacter colors
 					GPCharColor <= 8'b11111101;
 					//Congratulate the player -> PLAYER 1 WINS
@@ -778,6 +799,24 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					vgaGreen <= GPCharColor[4:2];
 					vgaBlue <= GPCharColor[1:0];
 					end
+				else if(GandhiHit == 2'b11)
+					begin
+					vgaRed <= GandhiColor3[7:5];
+					vgaGreen <= GandhiColor3[4:2];
+					vgaBlue <= GandhiColor3[1:0];
+					end
+				else if(GandhiHit == 2'b10)
+					begin
+					vgaRed <= GandhiColor2[7:5];
+					vgaGreen <= GandhiColor2[4:2];
+					vgaBlue <= GandhiColor2[1:0];
+					end
+				else if(GandhiHit == 2'b01)
+					begin
+					vgaRed <= GandhiColor1[7:5];
+					vgaGreen <= GandhiColor1[4:2];
+					vgaBlue <= GandhiColor1[1:0];
+					end
 				else if(obj1Hit)		//Ball always drawn over anything else
 					begin
 					vgaRed <= obj1Color[7:5];
@@ -807,18 +846,6 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 					vgaRed <= RightSSDColor[7:5];
 					vgaGreen <= RightSSDColor[4:2];
 					vgaBlue <= RightSSDColor[1:0];
-					end
-				else if(GandhiHit)
-					begin
-					vgaRed <= GandhiColor1[7:5];
-					vgaGreen <= GandhiColor1[4:2];
-					vgaBlue <= GandhiColor1[1:0];
-					end
-				else if(GandhiHit2)
-					begin
-					vgaRed <= GandhiColor2[7:5];
-					vgaGreen <= GandhiColor2[4:2];
-					vgaBlue <= GandhiColor2[1:0];
 					end
 				else if(BorderHit)		//Background border always drawn under everything else
 					begin
@@ -850,14 +877,14 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	/////////////////////////////////////////////////////////////////
 	wire LD0, LD1, LD2, LD3, LD4, LD5, LD6, LD7;
 	
-	assign LD0 = GPCharHit[0];
-	assign LD1 = GPCharHit[1];
-	assign LD2 = GPCharHit[2];
-	assign LD3 = GPCharHit[3];
-	assign LD4 = GPCharHit[4];
-	assign LD5 = GPCharHit[5];
-	assign LD6 = GPCharHit[6];
-	assign LD7 = GPCharHit[7];
+	assign LD0 = potentiometer1[0];
+	assign LD1 = potentiometer1[1];
+	assign LD2 = potentiometer1[2];
+	assign LD3 = potentiometer1[3];
+	assign LD4 = potentiometer1[4];
+	assign LD5 = potentiometer1[5];
+	assign LD6 = potentiometer1[6];
+	assign LD7 = potentiometer1[7];
 	
 	/////////////////////////////////////////////////////////////////
 	//////////////  	  LD control ends here 	 	////////////////////
@@ -870,10 +897,10 @@ module pong_top(ClkPort, vga_h_sync, vga_v_sync, vgaRed, vgaGreen, vgaBlue, btnU
 	wire 	[3:0]	SSD0, SSD1, SSD2, SSD3;
 	wire 	[1:0] ssdscan_clk;
 	
-	assign SSD3 = 4'b0000;
-	assign SSD2 = P1Score[3:0];
-	assign SSD1 = 4'b0000;
-	assign SSD0 = P2Score[3:0];
+	assign SSD3 = state;
+	assign SSD2 = countdown[11:8];
+	assign SSD1 = countdown[7:4];
+	assign SSD0 = countdown[3:0];
 	
 	// need a scan clk for the seven segment display 
 	// 191Hz (50MHz / 2^18) works well
